@@ -529,7 +529,7 @@ class Olama_Dashboard_Admin {
             <div class="os-hub-quick-action-wrapper">
                 <a href="<?php echo esc_url( $action['url'] ); ?>" class="os-hub-quick-action-pill" style="--action-color: <?php echo $color; ?>;">
                     <span class="dashicons <?php echo esc_attr( $action['icon'] ); ?>" aria-hidden="true"></span>
-                    <span class="os-hub-quick-action-label"><?php echo esc_html( $action['label'] ); ?></span>
+                    <span class="os-hub-quick-action-label" dir="auto"><?php echo esc_html( $action['label'] ); ?></span>
                 </a>
                 <button class="os-hub-quick-action-unpin" data-action-id="<?php echo esc_attr( $action['id'] ); ?>" title="<?php esc_attr_e( 'Unpin action', 'olama-dashboard' ); ?>" aria-label="<?php echo sprintf( esc_attr__( 'Unpin %s', 'olama-dashboard' ), esc_attr( $action['label'] ) ); ?>">
                     <span class="dashicons dashicons-no-alt" aria-hidden="true"></span>

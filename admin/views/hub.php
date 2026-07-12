@@ -123,7 +123,20 @@ if ( $is_admin ) {
     $role_key = reset( $current_user->roles );
     $wp_roles = wp_roles();
     if ( isset( $wp_roles->role_names[ $role_key ] ) ) {
-        $role_display_name = translate_user_role( $wp_roles->role_names[ $role_key ] );
+        $role_name = $wp_roles->role_names[ $role_key ];
+        if ( 'Teacher' === $role_name ) {
+            $role_display_name = _x( 'Teacher', 'User Role', 'olama-dashboard' );
+        } elseif ( 'Supervisor' === $role_name ) {
+            $role_display_name = _x( 'Supervisor', 'User Role', 'olama-dashboard' );
+        } elseif ( 'Accountant' === $role_name ) {
+            $role_display_name = _x( 'Accountant', 'User Role', 'olama-dashboard' );
+        } elseif ( 'Staff' === $role_name ) {
+            $role_display_name = _x( 'Staff', 'User Role', 'olama-dashboard' );
+        } elseif ( 'Administrator' === $role_name || 'Admin' === $role_name ) {
+            $role_display_name = _x( 'Admin', 'User Role', 'olama-dashboard' );
+        } else {
+            $role_display_name = translate_user_role( $role_name );
+        }
     }
 }
 
@@ -149,12 +162,15 @@ $hub_nonce = wp_create_nonce( 'olama_hub_nonce' );
         'actions'  => __( 'Actions', 'olama-dashboard' ),
         'openMod'  => __( 'Open Module', 'olama-dashboard' ),
         'close'    => __( 'Close', 'olama-dashboard' ),
+        'pin'      => __( 'Pin action', 'olama-dashboard' ),
+        'unpin'    => __( 'Unpin action', 'olama-dashboard' ),
     ],
 ] ); ?>
 </script>
 
 <?php // ── Page wrapper ──────────────────────────────────────────────────────── ?>
 <div class="wrap" id="os-hub-page">
+    <h1 class="screen-reader-text"><?php esc_html_e( 'Olama ERP Hub', 'olama-dashboard' ); ?></h1>
 
     <?php // ── Header ─────────────────────────────────────────────────────── ?>
     <div class="os-hub-header">
@@ -310,8 +326,8 @@ $hub_nonce = wp_create_nonce( 'olama_hub_nonce' );
                     </span>
 
                     <span class="os-hub-card-info">
-                        <span class="os-hub-card-title"><?php echo esc_html( $card['label'] ); ?></span>
-                        <span class="os-hub-card-desc"><?php echo esc_html( $card['description'] ); ?></span>
+                        <span class="os-hub-card-title" dir="auto"><?php echo esc_html( $card['label'] ); ?></span>
+                        <span class="os-hub-card-desc" dir="auto"><?php echo esc_html( $card['description'] ); ?></span>
                     </span>
 
                     <span class="os-hub-badge <?php echo $is_inactive ? 'os-hub-badge--inactive' : 'os-hub-badge--active'; ?>" aria-hidden="true">
@@ -344,7 +360,7 @@ $hub_nonce = wp_create_nonce( 'olama_hub_nonce' );
                         <div class="os-hub-action-link-wrapper">
                             <a class="os-hub-action-link" href="<?php echo esc_url( $link['url'] ); ?>">
                                 <span class="dashicons <?php echo esc_attr( $link['icon'] ); ?>" aria-hidden="true"></span>
-                                <span class="os-hub-action-link-text"><?php echo esc_html( $link['label'] ); ?></span>
+                                <span class="os-hub-action-link-text" dir="auto"><?php echo esc_html( $link['label'] ); ?></span>
                                 <span class="dashicons dashicons-arrow-right-alt os-hub-action-link-arrow" aria-hidden="true"></span>
                             </a>
                             <button class="<?php echo esc_attr( $pin_class ); ?>" data-action-id="<?php echo esc_attr( $link['id'] ); ?>" type="button" aria-label="<?php echo $link_pinned ? esc_attr__( 'Unpin action', 'olama-dashboard' ) : esc_attr__( 'Pin action', 'olama-dashboard' ); ?>" title="<?php echo $link_pinned ? esc_attr__( 'Unpin action', 'olama-dashboard' ) : esc_attr__( 'Pin action', 'olama-dashboard' ); ?>">
@@ -372,7 +388,7 @@ $hub_nonce = wp_create_nonce( 'olama_hub_nonce' );
                     <div class="os-hub-tray-header">
                         <div class="os-hub-tray-title">
                             <span class="os-hub-tray-icon dashicons" aria-hidden="true"></span>
-                            <span class="os-hub-tray-label"></span>
+                            <span class="os-hub-tray-label" dir="auto"></span>
                             <span class="os-hub-tray-subtitle"><?php esc_html_e( 'Actions', 'olama-dashboard' ); ?></span>
                         </div>
                         <button class="os-hub-tray-close" id="os-hub-tray-close" aria-label="<?php esc_attr_e( 'Close actions', 'olama-dashboard' ); ?>">

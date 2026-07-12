@@ -108,6 +108,7 @@
 
             var text = document.createElement( 'span' );
             text.className   = 'os-hub-tray-link-text';
+            text.setAttribute( 'dir', 'auto' );
             text.textContent = link.label;
 
             a.appendChild( icon );
@@ -118,8 +119,8 @@
             pinBtn.className = 'os-hub-pin-toggle' + ( currentlyPinned ? ' os-hub-pin-toggle--pinned' : '' );
             pinBtn.setAttribute( 'data-action-id', link.id );
             pinBtn.setAttribute( 'type', 'button' );
-            pinBtn.setAttribute( 'aria-label', currentlyPinned ? 'Unpin action' : 'Pin action' );
-            pinBtn.title = currentlyPinned ? 'Unpin action' : 'Pin action';
+            pinBtn.setAttribute( 'aria-label', currentlyPinned ? DATA.i18n.unpin : DATA.i18n.pin );
+            pinBtn.title = currentlyPinned ? DATA.i18n.unpin : DATA.i18n.pin;
 
             var pinIcon = document.createElement( 'span' );
             pinIcon.className = 'dashicons ' + ( currentlyPinned ? 'dashicons-star-filled' : 'dashicons-star-empty' );
@@ -169,8 +170,8 @@
                     buttons.forEach( function ( btn ) {
                         var nowPinned = isPinned( actionId );
                         btn.classList.toggle( 'os-hub-pin-toggle--pinned', nowPinned );
-                        btn.setAttribute( 'aria-label', nowPinned ? 'Unpin action' : 'Pin action' );
-                        btn.title = nowPinned ? 'Unpin action' : 'Pin action';
+                        btn.setAttribute( 'aria-label', nowPinned ? DATA.i18n.unpin : DATA.i18n.pin );
+                        btn.title = nowPinned ? DATA.i18n.unpin : DATA.i18n.pin;
                         var star = btn.querySelector( '.dashicons' );
                         if ( star ) {
                             star.className = 'dashicons ' + ( nowPinned ? 'dashicons-star-filled' : 'dashicons-star-empty' );

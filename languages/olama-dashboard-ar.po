@@ -1,0 +1,328 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Olama Dashboard\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-12 18:30+0300\n"
+"PO-Revision-Date: 2026-07-12 18:30+0300\n"
+"Last-Translator: Antigravity\n"
+"Language-Team: Arabic\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0\n"
+
+msgid "Olama Hub"
+msgstr "بوابة علامة ERP"
+
+msgid "Olama ERP Hub"
+msgstr "بوابة علامة ERP"
+
+msgid "School Management System"
+msgstr "نظام إدارة المدرسة"
+
+msgid "Welcome, %s"
+msgstr "مرحباً، %s"
+
+msgid "Academic Year"
+msgstr "السنة الدراسية"
+
+msgid "N/A"
+msgstr "غير متوفر"
+
+msgid "Active Students"
+msgstr "الطلاب النشطون"
+
+msgid "Active Modules"
+msgstr "الوحدات النشطة"
+
+msgid "Access Level"
+msgstr "مستوى الصلاحية"
+
+msgid "Quick Actions"
+msgstr "إجراءات سريعة"
+
+msgid "Modules"
+msgstr "الوحدات"
+
+msgid "(Your available modules are based on your assigned permissions)"
+msgstr "(تعتمد الوحدات المتاحة لك على الصلاحيات المخصصة لك)"
+
+msgid "Search modules"
+msgstr "البحث في الوحدات"
+
+msgid "Search modules..."
+msgstr "ابحث في الوحدات..."
+
+msgid "No modules are available for your account."
+msgstr "لا توجد وحدات متاحة لحسابك."
+
+msgid "Plugin not installed"
+msgstr "المكون الإضافي غير مثبت"
+
+msgid "Inactive"
+msgstr "غير نشط"
+
+msgid "Active"
+msgstr "نشط"
+
+msgid "Open Module"
+msgstr "فتح الوحدة"
+
+msgid "navigation"
+msgstr "التنقل"
+
+msgid "Unpin action"
+msgstr "إلغاء تثبيت الإجراء"
+
+msgid "Pin action"
+msgstr "تثبيت الإجراء"
+
+msgid "Module actions"
+msgstr "إجراءات الوحدة"
+
+msgid "Actions"
+msgstr "الإجراءات"
+
+msgid "Close actions"
+msgstr "إغلاق الإجراءات"
+
+msgid "Close"
+msgstr "إغلاق"
+
+msgid "Forbidden"
+msgstr "غير مسموح"
+
+msgid "Missing Action ID"
+msgstr "معرف الإجراء مفقود"
+
+msgid "Invalid Action ID"
+msgstr "معرف الإجراء غير صالح"
+
+msgid "Unauthorized action"
+msgstr "إجراء غير مصرح به"
+
+msgid "Pin actions from any module to add them here."
+msgstr "قم بتثبيت إجراءات من أي وحدة لإضافتها هنا."
+
+msgid "Unpin %s"
+msgstr "إلغاء تثبيت %s"
+
+msgid "Olama School"
+msgstr "نظام المدرسة"
+
+msgid "Weekly plans, attendance, grades, supervision & academic management."
+msgstr "الخطط الأسبوعية، الحضور، الدرجات، الإشراف والإدارة الأكاديمية."
+
+msgid "Dashboard"
+msgstr "لوحة التحكم"
+
+msgid "Reports"
+msgstr "التقارير"
+
+msgid "Weekly Plans"
+msgstr "الخطط الأسبوعية"
+
+msgid "Follow Up"
+msgstr "المتابعة"
+
+msgid "Academic"
+msgstr "الشؤون الأكاديمية"
+
+msgid "Curriculum"
+msgstr "المناهج"
+
+msgid "Exams"
+msgstr "الاختبارات"
+
+msgid "Evaluation"
+msgstr "التقييم"
+
+msgid "Supervision"
+msgstr "الإشراف"
+
+msgid "Users"
+msgstr "المستخدمون"
+
+msgid "KG"
+msgstr "رياض الأطفال"
+
+msgid "Transport"
+msgstr "النقل"
+
+msgid "Settings"
+msgstr "الإعدادات"
+
+msgid "Exam Hall"
+msgstr "قاعات الامتحانات"
+
+msgid "Olama Billing"
+msgstr "المالية"
+
+msgid "Invoices, payments, agreements, fee templates & financial reports."
+msgstr "الفواتير، المدفوعات، الاتفاقيات، قوالب الرسوم والتقارير المالية."
+
+msgid "Customer Hub"
+msgstr "مركز العملاء"
+
+msgid "Contacts"
+msgstr "جهات الاتصال"
+
+msgid "Fee Templates"
+msgstr "قوالب الرسوم"
+
+msgid "Agreements"
+msgstr "الاتفاقيات"
+
+msgid "Invoices"
+msgstr "الفواتير"
+
+msgid "Payments"
+msgstr "المدفوعات"
+
+msgid "Financial Accounts"
+msgstr "الحسابات المالية"
+
+msgid "Custom Payments"
+msgstr "مدفوعات مخصصة"
+
+msgid "Billing Reports"
+msgstr "تقارير الفواتير"
+
+msgid "Cash Sessions"
+msgstr "جلسات الصندوق"
+
+msgid "Payment Review"
+msgstr "مراجعة المدفوعات"
+
+msgid "Settlements"
+msgstr "التسويات"
+
+msgid "Exam Engine"
+msgstr "محرك الاختبارات"
+
+msgid "Question bank, school exams, job application tests & grade-level assessments."
+msgstr "بنك الأسئلة، الامتحانات المدرسية، اختبارات طلبات التوظيف وتقييمات المراحل الدراسية."
+
+msgid "Question Bank"
+msgstr "بنك الأسئلة"
+
+msgid "School Exams"
+msgstr "اختبارات المدرسة"
+
+msgid "Job Apps"
+msgstr "طلبات التوظيف"
+
+msgid "Grade Levels"
+msgstr "المراحل الدراسية"
+
+msgid "Olama Messages"
+msgstr "الرسائل"
+
+msgid "SMS campaigns, templates, dispatch queue, sending agents & direct messages."
+msgstr "حملات الرسائل النصية، القوالب، طابور الإرسال، وكلاء الإرسال والرسائل المباشرة."
+
+msgid "SMS Queue"
+msgstr "قائمة إرسال الرسائل"
+
+msgid "Recipients"
+msgstr "المستلمون"
+
+msgid "Report Links"
+msgstr "روابط التقارير"
+
+msgid "Sending Agents"
+msgstr "وكلاء الإرسال"
+
+msgid "Direct Message"
+msgstr "رسالة مباشرة"
+
+msgid "Olama Stores"
+msgstr "نظام المستودعات"
+
+msgid "Inventory, item registry, stock tracking, employee custody & order estimation."
+msgstr "المخزون، سجل المواد، تتبع المخزون، عهدة الموظفين وتقدير الطلبيات."
+
+msgid "Item Registry"
+msgstr "سجل المواد"
+
+msgid "Add Items"
+msgstr "إضافة مواد"
+
+msgid "Stock"
+msgstr "المخزون"
+
+msgid "Employee Custody"
+msgstr "عهدة الموظف"
+
+msgid "Student Withdrawals"
+msgstr "سحوبات الطلاب"
+
+msgid "Books Withdrawal"
+msgstr "سحب الكتب"
+
+msgid "Order Estimation"
+msgstr "تقدير الطلبيات"
+
+msgid "Inventory Count"
+msgstr "جرد المخازن"
+
+msgid "Oracle Sync"
+msgstr "مزامنة أوراكل"
+
+msgid "Oracle ERP data sync — settings, manual runs, sync history & validation."
+msgstr "مزامنة بيانات أوراكل ERP - الإعدادات، التشغيل اليدوي، سجل المزامنة والتحقق."
+
+msgid "Manual Sync"
+msgstr "المزامنة اليدوية"
+
+msgid "Sync Runs"
+msgstr "عمليات المزامنة"
+
+msgid "Validation"
+msgstr "التحقق من المزامنة"
+
+msgid "Olama Tools"
+msgstr "أدوات علامة"
+
+msgid "Performance Monitor"
+msgstr "مراقب الأداء"
+
+msgid "Performance monitoring, system health & diagnostic tools."
+msgstr "مراقبة الأداء، صحة النظام وأدوات التشخيص."
+
+msgid "Media Library"
+msgstr "مكتبة الوسائط"
+
+msgid "Curriculum media files, Google Drive uploads & lesson attachments."
+msgstr "ملفات وسائط المناهج، الرفع إلى جوجل درايف ومرفقات الدروس."
+
+msgid "My Profile"
+msgstr "ملفي الشخصي"
+
+msgid "System overview"
+msgstr "نظرة عامة على النظام"
+
+msgid "You do not have permission to view this page."
+msgstr "ليس لديك الصلاحية لعرض هذه الصفحة."
+
+# User roles
+msgctxt "User Role"
+msgid "Staff"
+msgstr "الموظفون"
+
+msgctxt "User Role"
+msgid "Teacher"
+msgstr "المعلمون"
+
+msgctxt "User Role"
+msgid "Admin"
+msgstr "المديرون"
+
+msgctxt "User Role"
+msgid "Supervisor"
+msgstr "المشرفون"
+
+msgctxt "User Role"
+msgid "Accountant"
+msgstr "المحاسبون"

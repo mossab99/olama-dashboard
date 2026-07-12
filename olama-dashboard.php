@@ -7,6 +7,7 @@
  * Author:      د. مصعب الحنيطي
  * Author URI:  https://olama.online
  * Text Domain: olama-dashboard
+ * Domain Path: /languages
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -36,6 +37,7 @@ function olama_dashboard_can_access() {
  * priority 99 — after all other plugins have registered at default priority 10.
  */
 add_action( 'plugins_loaded', function () {
+    load_plugin_textdomain( 'olama-dashboard', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
     if ( is_admin() ) {
         new Olama_Dashboard_Admin();
     }

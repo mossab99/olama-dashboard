@@ -371,10 +371,14 @@
     font-family: var(--hub-font);
     color:       inherit;
 
-    padding:     16px 16px 14px;
-    display:     flex;
-    align-items: flex-start;
-    gap:         12px;
+    padding:     16px;
+    display:     grid;
+    grid-template-columns: 40px 1fr auto;
+    grid-template-areas:
+        "icon info chevron"
+        "icon badge chevron";
+    align-items: start;
+    gap:         8px 12px;
     outline:     none;
 }
 
@@ -388,6 +392,8 @@
 
 /* Icon blob */
 .os-hub-card-icon {
+    grid-area:       icon;
+    align-self:      start;
     width:           40px;
     height:          40px;
     min-width:       40px;
@@ -413,10 +419,9 @@
 
 /* Info text */
 .os-hub-card-info {
-    flex:       1;
+    grid-area:  info;
     min-width:  0;
     text-align: left;
-    min-height: 48px; /* normalize height for info block to ensure card height equality */
 }
 
 .os-hub-card-title {
@@ -426,9 +431,8 @@
     color:         var(--hub-text);
     line-height:   1.2;
     margin-bottom: 3px;
-    white-space:   nowrap;
-    overflow:      hidden;
-    text-overflow: ellipsis;
+    white-space:   normal;
+    word-break:    break-word;
 }
 
 .os-hub-card-desc {
@@ -445,6 +449,9 @@
 
 /* Badge */
 .os-hub-badge {
+    grid-area:      badge;
+    justify-self:   start;
+    align-self:     center;
     display:        inline-flex;
     align-items:    center;
     font-size:      9px;
@@ -463,6 +470,8 @@
 
 /* Chevron */
 .os-hub-card-chevron {
+    grid-area:       chevron;
+    align-self:      center;
     display:         flex;
     align-items:     center;
     justify-content: center;
@@ -854,16 +863,10 @@ body.rtl .os-hub-card::before {
 body.rtl .os-hub-card-info,
 body.rtl .os-hub-card-header { text-align: right; }
 
-body.rtl .os-hub-action-link { flex-direction: row-reverse; }
-body.rtl .os-hub-action-link:hover,
-body.rtl .os-hub-action-link:focus-visible { padding-left: 10px; padding-right: 14px; }
+/* Keep layout natural in RTL */
 body.rtl .os-hub-action-link-arrow { transform: scaleX(-1); }
 body.rtl .os-hub-action-link:hover .os-hub-action-link-arrow,
-body.rtl .os-hub-action-link:focus-visible .os-hub-action-link-arrow { transform: scaleX(-1) translateX(-3px); }
-
-body.rtl .os-hub-tray-link { flex-direction: row-reverse; }
-body.rtl .os-hub-tray-link:hover,
-body.rtl .os-hub-tray-link:focus-visible { padding-right: 14px; padding-left: 10px; }
+body.rtl .os-hub-action-link:focus-visible .os-hub-action-link-arrow { transform: scaleX(-1) translateX(3px); }
 
 body.rtl .os-hub-stat {
     border-right: none;
@@ -878,6 +881,29 @@ body.rtl .os-hub-search { padding: 0 34px 0 10px; }
 body.rtl .os-hub-search-icon { left: auto; right: 9px; }
 
 body.rtl .os-hub-section-title::before { order: 1; }
+
+body.rtl .os-hub-quick-action-unpin {
+    right: auto;
+    left: -3px;
+}
+
+/* WordPress/User Switch notices styling */
+#os-hub-page > .notice,
+#os-hub-page > .update-nag,
+#os-hub-page > .updated,
+#os-hub-page > .error {
+    margin: 15px 36px 5px !important;
+    border-radius: var(--hub-radius-sm);
+    width: auto;
+}
+@media (max-width: 599px) {
+    #os-hub-page > .notice,
+    #os-hub-page > .update-nag,
+    #os-hub-page > .updated,
+    #os-hub-page > .error {
+        margin: 15px 16px 5px !important;
+    }
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    QUICK ACTIONS
