@@ -44,18 +44,23 @@ class Olama_Dashboard_Admin {
             return;
         }
 
+        $style_path     = OLAMA_DASH_PATH . 'assets/css/hub.css';
+        $script_path    = OLAMA_DASH_PATH . 'assets/js/hub.js';
+        $style_version  = file_exists( $style_path ) ? (string) filemtime( $style_path ) : OLAMA_DASH_VERSION;
+        $script_version = file_exists( $script_path ) ? (string) filemtime( $script_path ) : OLAMA_DASH_VERSION;
+
         wp_enqueue_style(
             'olama-hub-style',
             OLAMA_DASH_URL . 'assets/css/hub.css',
             [],
-            OLAMA_DASH_VERSION
+            $style_version
         );
 
         wp_enqueue_script(
             'olama-hub-script',
             OLAMA_DASH_URL . 'assets/js/hub.js',
             [ 'jquery' ],
-            OLAMA_DASH_VERSION,
+            $script_version,
             true
         );
 
