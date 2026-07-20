@@ -21,14 +21,24 @@ define( 'OLAMA_DASH_URL',     plugin_dir_url( __FILE__ ) );
 
 require_once OLAMA_DASH_PATH . 'admin/class-olama-dashboard-admin.php';
 
+add_action( 'olama_users_register_modules', function () {
+    $registry = new Olama_Dashboard_Admin( false );
+    $registry->register_access_module();
+}, 5 );
+
+add_action( 'olama_users_register_modules', function () {
+    $registry = new Olama_Dashboard_Admin( false );
+    $registry->register_card_access_modules();
+}, 999 );
+
 /**
- * Capability helper — used everywhere instead of a hardcoded single capability.
- * Returns true for site admins OR any user with the Olama dashboard capability.
- * This prevents the hub from disappearing if olama-school is temporarily inactive.
+ * Capability helper for the authenticated Hub shell.
+ *
+ * Hub access is intentionally independent of every individual module. The Hub
+ * view applies the assigned module and submenu capabilities to its contents.
  */
 function olama_dashboard_can_access() {
-    return current_user_can( 'manage_options' )
-        || current_user_can( 'olama_view_dashboard' );
+    return current_user_can( 'manage_options' ) || current_user_can( 'olama_hub_access' );
 }
 
 /**

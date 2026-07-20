@@ -12,7 +12,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Olama_Dashboard_Admin {
 
-    public function __construct() {
+    public function __construct( $register_hooks = true ) {
+        if ( ! $register_hooks ) {
+            return;
+        }
         // Priority 99 on admin_menu: all sibling plugin menus are registered at 10.
         add_action( 'admin_menu',             [ $this, 'register_menu'    ], 99  );
         // Priority 999: runs after all plugins register their menus, so we can remove selectively.
@@ -29,7 +32,7 @@ class Olama_Dashboard_Admin {
         add_menu_page(
             __( 'Olama Hub', 'olama-dashboard' ),
             __( 'Olama Hub', 'olama-dashboard' ),
-            'read',                          // low barrier — capability enforced in render()
+            'olama_hub_access',
             'olama-dashboard',
             [ $this, 'render_hub' ],
             'dashicons-layout',
@@ -82,7 +85,7 @@ class Olama_Dashboard_Admin {
      *  - Current user is NOT an administrator.
      *  - Option `olama_dashboard_redirect` is true (default false — opt-in).
      *  - Constant OLAMA_DASH_NO_REDIRECT is not defined/true.
-     *  - User has the hub capability.
+     *  - User can access the authenticated Hub shell.
      *  - Current page is the bare WP dashboard (index.php).
      *
      * Administrators always land on the standard WordPress dashboard.
@@ -140,7 +143,7 @@ class Olama_Dashboard_Admin {
             return;
         }
 
-        // Must be an Olama-capable user.
+        // Only authenticated users who can enter the Hub should be simplified.
         if ( ! olama_dashboard_can_access() ) {
             return;
         }
@@ -180,7 +183,7 @@ class Olama_Dashboard_Admin {
             return;
         }
 
-        foreach ( $menu as $item ) {
+        foreach ( $menu as $index => $item ) {
             if ( ! isset( $item[2] ) || '' === $item[2] ) {
                 continue;
             }
@@ -189,7 +192,7 @@ class Olama_Dashboard_Admin {
                 continue;
             }
             if ( ! in_array( $item[2], $keep, true ) ) {
-                remove_menu_page( $item[2] );
+                unset( $menu[ $index ] );
             }
         }
     }
@@ -206,7 +209,7 @@ class Olama_Dashboard_Admin {
             return;
         }
 
-        // Must be an Olama-capable user.
+        // Only authenticated users who can enter the Hub should be simplified.
         if ( ! olama_dashboard_can_access() ) {
             return;
         }
@@ -244,6 +247,74 @@ class Olama_Dashboard_Admin {
      *
      * @return array[]
      */
+    public function register_access_module() {
+        if ( ! class_exists( 'Olama_Users_Registry' ) ) {
+            return;
+        }
+        Olama_Users_Registry::register( [
+            'id'            => 'olama_hub',
+            'plugin'        => 'olama-dashboard',
+            'label'         => __( 'Olama Hub', 'olama-dashboard' ),
+            'capability'    => 'olama_hub_access',
+            'default_grant' => true,
+            'items'         => [],
+        ] );
+    }
+
+    /**
+     * Imports every OLAMA/Stores capability exposed by Hub cards into the
+     * central matrix. Plugins with a richer declaration keep their own module.
+     */
+    public function register_card_access_modules() {
+        if ( ! class_exists( 'Olama_Users_Registry' ) ) {
+            return;
+        }
+        $declared = Olama_Users_Registry::capabilities();
+        foreach ( $this->build_registry() as $card ) {
+            $capability = isset( $card['capability'] ) ? sanitize_key( $card['capability'] ) : '';
+            if (
+                empty( $card['id'] ) ||
+                ! $capability ||
+                (
+                    0 !== strpos( $capability, 'olama_' ) &&
+                    0 !== strpos( $capability, 'os_' ) &&
+                    0 !== strpos( $capability, 'manage_olama_' )
+                ) ||
+                isset( $declared[ $capability ] )
+            ) {
+                continue;
+            }
+            $items = [];
+            foreach ( (array) ( $card['submenus'] ?? [] ) as $submenu ) {
+                $item_capability = isset( $submenu['capability'] ) ? sanitize_key( $submenu['capability'] ) : $capability;
+                if (
+                    ! $item_capability ||
+                    (
+                        0 !== strpos( $item_capability, 'olama_' ) &&
+                        0 !== strpos( $item_capability, 'os_' ) &&
+                        0 !== strpos( $item_capability, 'manage_olama_' )
+                    )
+                ) {
+                    continue;
+                }
+                $items[] = [
+                    'id'         => sanitize_key( $submenu['id'] ?? $item_capability ),
+                    'type'       => 'submenu',
+                    'label'      => (string) ( $submenu['label'] ?? $item_capability ),
+                    'capability' => $item_capability,
+                ];
+            }
+            Olama_Users_Registry::register( [
+                'id'         => 'hub_' . sanitize_key( $card['id'] ),
+                'plugin'     => sanitize_key( $card['id'] ),
+                'label'      => (string) ( $card['label'] ?? $card['id'] ),
+                'capability' => $capability,
+                'items'      => $items,
+            ] );
+            $declared[ $capability ] = true;
+        }
+    }
+
     public function build_registry() {
         $cards = [
 
@@ -332,18 +403,18 @@ class Olama_Dashboard_Admin {
                 'accent'      => '#f59e0b',
                 'accent_rgb'  => '245,158,11',
                 'active'      => defined( 'OLAMA_MSG_FILE' ),
-                'capability'  => 'manage_options',
+                'capability'  => 'olama_access_messages',
                 'primary_url' => admin_url( 'admin.php?page=olama-messages' ),
                 'submenus'    => [
-                    [ 'id' => 'messages.dashboard', 'label' => __( 'Dashboard',      'olama-dashboard' ), 'icon' => 'dashicons-dashboard',        'url' => admin_url( 'admin.php?page=olama-messages' ), 'capability' => 'manage_options', 'color' => '#f59e0b' ],
-                    [ 'id' => 'messages.campaigns', 'label' => __( 'Campaigns',      'olama-dashboard' ), 'icon' => 'dashicons-megaphone',        'url' => admin_url( 'admin.php?page=olama-messages-campaigns' ), 'capability' => 'manage_options', 'color' => '#f59e0b' ],
-                    [ 'id' => 'messages.templates', 'label' => __( 'Templates',      'olama-dashboard' ), 'icon' => 'dashicons-media-text',       'url' => admin_url( 'admin.php?page=olama-messages-templates' ), 'capability' => 'manage_options', 'color' => '#f59e0b' ],
-                    [ 'id' => 'messages.queue', 'label' => __( 'SMS Queue',      'olama-dashboard' ), 'icon' => 'dashicons-clock',            'url' => admin_url( 'admin.php?page=olama-messages-queue' ), 'capability' => 'manage_options', 'color' => '#f59e0b' ],
-                    [ 'id' => 'messages.recipients', 'label' => __( 'Recipients',     'olama-dashboard' ), 'icon' => 'dashicons-groups',           'url' => admin_url( 'admin.php?page=olama-messages-recipients' ), 'capability' => 'manage_options', 'color' => '#f59e0b' ],
-                    [ 'id' => 'messages.tokens', 'label' => __( 'Report Links',   'olama-dashboard' ), 'icon' => 'dashicons-admin-links',      'url' => admin_url( 'admin.php?page=olama-messages-tokens' ), 'capability' => 'manage_options', 'color' => '#f59e0b' ],
-                    [ 'id' => 'messages.agents', 'label' => __( 'Sending Agents', 'olama-dashboard' ), 'icon' => 'dashicons-controls-forward', 'url' => admin_url( 'admin.php?page=olama-messages-agents' ), 'capability' => 'manage_options', 'color' => '#f59e0b' ],
-                    [ 'id' => 'messages.direct', 'label' => __( 'Direct Message', 'olama-dashboard' ), 'icon' => 'dashicons-format-chat',      'url' => admin_url( 'admin.php?page=olama-messages-direct' ), 'capability' => 'manage_options', 'color' => '#f59e0b' ],
-                    [ 'id' => 'messages.settings', 'label' => __( 'Settings',       'olama-dashboard' ), 'icon' => 'dashicons-admin-settings',   'url' => admin_url( 'admin.php?page=olama-messages-settings' ), 'capability' => 'manage_options', 'color' => '#f59e0b' ],
+                    [ 'id' => 'messages.dashboard', 'label' => __( 'Dashboard',      'olama-dashboard' ), 'icon' => 'dashicons-dashboard',        'url' => admin_url( 'admin.php?page=olama-messages' ), 'capability' => 'olama_access_messages', 'color' => '#f59e0b' ],
+                    [ 'id' => 'messages.campaigns', 'label' => __( 'Campaigns',      'olama-dashboard' ), 'icon' => 'dashicons-megaphone',        'url' => admin_url( 'admin.php?page=olama-messages-campaigns' ), 'capability' => 'olama_access_messages', 'color' => '#f59e0b' ],
+                    [ 'id' => 'messages.templates', 'label' => __( 'Templates',      'olama-dashboard' ), 'icon' => 'dashicons-media-text',       'url' => admin_url( 'admin.php?page=olama-messages-templates' ), 'capability' => 'olama_access_messages', 'color' => '#f59e0b' ],
+                    [ 'id' => 'messages.queue', 'label' => __( 'SMS Queue',      'olama-dashboard' ), 'icon' => 'dashicons-clock',            'url' => admin_url( 'admin.php?page=olama-messages-queue' ), 'capability' => 'olama_access_messages', 'color' => '#f59e0b' ],
+                    [ 'id' => 'messages.recipients', 'label' => __( 'Recipients',     'olama-dashboard' ), 'icon' => 'dashicons-groups',           'url' => admin_url( 'admin.php?page=olama-messages-recipients' ), 'capability' => 'olama_access_messages', 'color' => '#f59e0b' ],
+                    [ 'id' => 'messages.tokens', 'label' => __( 'Report Links',   'olama-dashboard' ), 'icon' => 'dashicons-admin-links',      'url' => admin_url( 'admin.php?page=olama-messages-tokens' ), 'capability' => 'olama_access_messages', 'color' => '#f59e0b' ],
+                    [ 'id' => 'messages.agents', 'label' => __( 'Sending Agents', 'olama-dashboard' ), 'icon' => 'dashicons-controls-forward', 'url' => admin_url( 'admin.php?page=olama-messages-agents' ), 'capability' => 'olama_access_messages', 'color' => '#f59e0b' ],
+                    [ 'id' => 'messages.direct', 'label' => __( 'Direct Message', 'olama-dashboard' ), 'icon' => 'dashicons-format-chat',      'url' => admin_url( 'admin.php?page=olama-messages-direct' ), 'capability' => 'olama_access_messages', 'color' => '#f59e0b' ],
+                    [ 'id' => 'messages.settings', 'label' => __( 'Settings',       'olama-dashboard' ), 'icon' => 'dashicons-admin-settings',   'url' => admin_url( 'admin.php?page=olama-messages-settings' ), 'capability' => 'olama_access_messages', 'color' => '#f59e0b' ],
                 ],
             ],
 
@@ -382,14 +453,14 @@ class Olama_Dashboard_Admin {
                 'accent'      => '#0ea5e9',
                 'accent_rgb'  => '14,165,233',
                 'active'      => defined( 'OLAMA_ORACLE_SYNC_FILE' ),
-                'capability'  => 'manage_options',
+                'capability'  => 'olama_access_oracle_sync',
                 'primary_url' => admin_url( 'admin.php?page=olama-oracle-sync' ),
                 'submenus'    => [
-                    [ 'id' => 'oracle.dashboard', 'label' => __( 'Dashboard',   'olama-dashboard' ), 'icon' => 'dashicons-dashboard',       'url' => admin_url( 'admin.php?page=olama-oracle-sync' ), 'capability' => 'manage_options', 'color' => '#0ea5e9' ],
-                    [ 'id' => 'oracle.settings', 'label' => __( 'Settings',    'olama-dashboard' ), 'icon' => 'dashicons-admin-settings',  'url' => admin_url( 'admin.php?page=olama-oracle-sync-settings' ), 'capability' => 'manage_options', 'color' => '#0ea5e9' ],
-                    [ 'id' => 'oracle.manual', 'label' => __( 'Manual Sync', 'olama-dashboard' ), 'icon' => 'dashicons-controls-play',   'url' => admin_url( 'admin.php?page=olama-oracle-sync-manual' ), 'capability' => 'manage_options', 'color' => '#0ea5e9' ],
-                    [ 'id' => 'oracle.runs', 'label' => __( 'Sync Runs',   'olama-dashboard' ), 'icon' => 'dashicons-clock',           'url' => admin_url( 'admin.php?page=olama-oracle-sync-runs' ), 'capability' => 'manage_options', 'color' => '#0ea5e9' ],
-                    [ 'id' => 'oracle.validation', 'label' => __( 'Validation',  'olama-dashboard' ), 'icon' => 'dashicons-yes-alt',         'url' => admin_url( 'admin.php?page=olama-oracle-sync-validation' ), 'capability' => 'manage_options', 'color' => '#0ea5e9' ],
+                    [ 'id' => 'oracle.dashboard', 'label' => __( 'Dashboard',   'olama-dashboard' ), 'icon' => 'dashicons-dashboard',       'url' => admin_url( 'admin.php?page=olama-oracle-sync' ), 'capability' => 'olama_access_oracle_sync', 'color' => '#0ea5e9' ],
+                    [ 'id' => 'oracle.settings', 'label' => __( 'Settings',    'olama-dashboard' ), 'icon' => 'dashicons-admin-settings',  'url' => admin_url( 'admin.php?page=olama-oracle-sync-settings' ), 'capability' => 'olama_access_oracle_sync', 'color' => '#0ea5e9' ],
+                    [ 'id' => 'oracle.manual', 'label' => __( 'Manual Sync', 'olama-dashboard' ), 'icon' => 'dashicons-controls-play',   'url' => admin_url( 'admin.php?page=olama-oracle-sync-manual' ), 'capability' => 'olama_access_oracle_sync', 'color' => '#0ea5e9' ],
+                    [ 'id' => 'oracle.runs', 'label' => __( 'Sync Runs',   'olama-dashboard' ), 'icon' => 'dashicons-clock',           'url' => admin_url( 'admin.php?page=olama-oracle-sync-runs' ), 'capability' => 'olama_access_oracle_sync', 'color' => '#0ea5e9' ],
+                    [ 'id' => 'oracle.validation', 'label' => __( 'Validation',  'olama-dashboard' ), 'icon' => 'dashicons-yes-alt',         'url' => admin_url( 'admin.php?page=olama-oracle-sync-validation' ), 'capability' => 'olama_access_oracle_sync', 'color' => '#0ea5e9' ],
                 ],
             ],
 
@@ -402,10 +473,10 @@ class Olama_Dashboard_Admin {
                 'accent'      => '#10b981',
                 'accent_rgb'  => '16,185,129',
                 'active'      => defined( 'OLAMA_PERF_FILE' ),
-                'capability'  => 'manage_options',
+                'capability'  => 'olama_access_tools',
                 'primary_url' => admin_url( 'admin.php?page=olama-tools' ),
                 'submenus'    => [
-                    [ 'id' => 'tools.monitor', 'label' => __( 'Performance Monitor', 'olama-dashboard' ), 'icon' => 'dashicons-chart-line', 'url' => admin_url( 'admin.php?page=olama-performance-monitor' ), 'capability' => 'manage_options', 'color' => '#10b981' ],
+                    [ 'id' => 'tools.monitor', 'label' => __( 'Performance Monitor', 'olama-dashboard' ), 'icon' => 'dashicons-chart-line', 'url' => admin_url( 'admin.php?page=olama-performance-monitor' ), 'capability' => 'olama_access_tools', 'color' => '#10b981' ],
                 ],
             ],
 
@@ -418,10 +489,10 @@ class Olama_Dashboard_Admin {
                 'accent'      => '#64748b',
                 'accent_rgb'  => '100,116,139',
                 'active'      => defined( 'OLAMA_MEDIA_LIBRARY_FILE' ),
-                'capability'  => 'read',
+                'capability'  => 'olama_access_media_library',
                 'primary_url' => admin_url( 'admin.php?page=academy-media-library' ),
                 'submenus'    => [
-                    [ 'id' => 'media.library', 'label' => __( 'Media Library', 'olama-dashboard' ), 'icon' => 'dashicons-format-video', 'url' => admin_url( 'admin.php?page=academy-media-library' ), 'capability' => 'read', 'color' => '#64748b' ],
+                    [ 'id' => 'media.library', 'label' => __( 'Media Library', 'olama-dashboard' ), 'icon' => 'dashicons-format-video', 'url' => admin_url( 'admin.php?page=academy-media-library' ), 'capability' => 'olama_access_media_library', 'color' => '#64748b' ],
                 ],
             ],
         ];
