@@ -25,6 +25,7 @@ class Olama_Dashboard_Admin {
         add_action( 'admin_init',             [ $this, 'maybe_refresh_pending_registry' ], 100 );
         add_action( 'admin_post_olama_dashboard_refresh_registry', [ $this, 'handle_registry_refresh' ] );
         add_action( 'olama_users_capabilities_updated', [ $this, 'refresh_after_capability_update' ], 10, 3 );
+        add_action( 'updated_option', [ $this, 'watch_role_capability_updates' ], 10, 3 );
         add_action( 'upgrader_process_complete', [ $this, 'mark_registry_refresh_pending' ], 10, 0 );
         add_action( 'activated_plugin', [ $this, 'mark_registry_refresh_pending' ], 10, 0 );
         add_action( 'deactivated_plugin', [ $this, 'mark_registry_refresh_pending' ], 10, 0 );
@@ -136,11 +137,30 @@ class Olama_Dashboard_Admin {
      * Rebuild Hub and OLAMA Users registries and persist a refresh summary.
      */
     public function refresh_modules_and_actions( $source = 'manual' ) {
-        if ( ! class_exists( 'Olama_Users_Registry' ) || ! method_exists( 'Olama_Users_Registry', 'refresh' ) ) {
+        if ( ! class_exists( 'Olama_Users_Registry' ) ) {
             return new WP_Error( 'registry_unavailable', __( 'OLAMA Users registry is unavailable.', 'olama-dashboard' ) );
         }
 
-        $users_summary = Olama_Users_Registry::refresh();
+        if ( method_exists( 'Olama_Users_Registry', 'refresh' ) ) {
+            $users_summary = Olama_Users_Registry::refresh();
+        } else {
+            // Backward compatibility for OLAMA Users versions that predate
+            // the explicit refresh API. An admin-post request is a fresh PHP
+            // request, so loading and rediscovering menus rebuilds the live
+            // registry from all active plugin declarations.
+            Olama_Users_Registry::load();
+            if ( method_exists( 'Olama_Users_Registry', 'discover_admin_menus' ) ) {
+                Olama_Users_Registry::discover_admin_menus();
+            }
+            $legacy_modules = Olama_Users_Registry::all();
+            $legacy_capabilities = method_exists( 'Olama_Users_Registry', 'capabilities' )
+                ? Olama_Users_Registry::capabilities()
+                : [];
+            $users_summary = [
+                'modules' => count( $legacy_modules ),
+                'capabilities' => count( $legacy_capabilities ),
+            ];
+        }
         $cards = $this->build_registry();
         $action_count = 0;
         foreach ( $cards as $card ) {
@@ -187,6 +207,18 @@ class Olama_Dashboard_Admin {
 
     public function refresh_after_capability_update( $role_key, $plugin_id, $result ) {
         $this->refresh_modules_and_actions( 'capabilities' );
+    }
+
+    /**
+     * Queue a refresh when WordPress persists role capability changes.
+     * This also supports OLAMA Users releases without the dedicated hook.
+     */
+    public function watch_role_capability_updates( $option, $old_value, $value ) {
+        global $wpdb;
+        if ( $option !== $wpdb->prefix . 'user_roles' || $old_value === $value ) {
+            return;
+        }
+        $this->mark_registry_refresh_pending();
     }
 
     public function mark_registry_refresh_pending() {

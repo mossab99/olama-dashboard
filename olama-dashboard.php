@@ -3,7 +3,7 @@
  * Plugin Name: Olama Dashboard
  * Plugin URI:  https://olama.online
  * Description: Card-based ERP hub — premium navigation layer for the Olama School system. Replaces the standard WordPress plugin list with a beautiful, permission-filtered landing page.
- * Version:     1.0.1
+ * Version:     1.0.2
  * Author:      د. مصعب الحنيطي
  * Author URI:  https://olama.online
  * Text Domain: olama-dashboard
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'OLAMA_DASH_VERSION', '1.0.1' );
+define( 'OLAMA_DASH_VERSION', '1.0.2' );
 define( 'OLAMA_DASH_FILE',    __FILE__ );
 define( 'OLAMA_DASH_PATH',    plugin_dir_path( __FILE__ ) );
 define( 'OLAMA_DASH_URL',     plugin_dir_url( __FILE__ ) );
