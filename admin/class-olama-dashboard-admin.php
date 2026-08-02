@@ -492,6 +492,12 @@ class Olama_Dashboard_Admin {
                     [ 'id' => 'school.weekly_plans', 'label' => __( 'Weekly Plans',      'olama-dashboard' ), 'icon' => 'dashicons-calendar-alt',         'url' => admin_url( 'admin.php?page=olama-school-plans' ), 'capability' => 'olama_access_plans_mgmt', 'color' => '#1a56db' ],
                     [ 'id' => 'school.follow_up', 'label' => __( 'Follow Up',         'olama-dashboard' ), 'icon' => 'dashicons-visibility',           'url' => admin_url( 'admin.php?page=olama-school-follow-up' ), 'capability' => 'olama_access_followup', 'color' => '#1a56db' ],
                     [ 'id' => 'school.academic', 'label' => __( 'Academic',          'olama-dashboard' ), 'icon' => 'dashicons-book',                 'url' => admin_url( 'admin.php?page=olama-school-academic' ), 'capability' => 'olama_access_academic_mgmt', 'color' => '#1a56db' ],
+                    [ 'id' => 'school.academic.calendar', 'label' => $this->school_label( 'Academic Calendar' ), 'icon' => 'dashicons-calendar-alt', 'url' => admin_url( 'admin.php?page=olama-school-academic&tab=calendar' ), 'capability' => 'olama_manage_academic_calendar', 'color' => '#1a56db' ],
+                    [ 'id' => 'school.academic.grades', 'label' => $this->school_label( 'Grades & Sections' ), 'icon' => 'dashicons-networking', 'url' => admin_url( 'admin.php?page=olama-school-academic&tab=grades' ), 'capability' => 'olama_manage_academic_grades', 'color' => '#1a56db' ],
+                    [ 'id' => 'school.academic.subjects', 'label' => $this->school_label( 'Subjects' ), 'icon' => 'dashicons-book-alt', 'url' => admin_url( 'admin.php?page=olama-school-academic&tab=subjects' ), 'capability' => 'olama_manage_academic_subjects', 'color' => '#1a56db' ],
+                    [ 'id' => 'school.academic.assign_teachers', 'label' => $this->school_label( 'Assign Teachers' ), 'icon' => 'dashicons-groups', 'url' => admin_url( 'admin.php?page=olama-school-academic&tab=assign_teachers' ), 'capability' => 'olama_manage_academic_assignment', 'color' => '#1a56db' ],
+                    [ 'id' => 'school.academic.stationary', 'label' => $this->school_label( 'Stationary' ), 'icon' => 'dashicons-edit-page', 'url' => admin_url( 'admin.php?page=olama-school-academic&tab=stationary' ), 'capability' => 'olama_manage_academic_stationary', 'color' => '#1a56db' ],
+                    [ 'id' => 'school.academic.office_hours', 'label' => $this->school_label( 'Office Hours' ), 'icon' => 'dashicons-clock', 'url' => admin_url( 'admin.php?page=olama-school-academic&tab=office_hours' ), 'capability' => 'olama_manage_academic_office_hours', 'color' => '#1a56db' ],
                     [ 'id' => 'school.curriculum', 'label' => __( 'Curriculum',        'olama-dashboard' ), 'icon' => 'dashicons-list-view',            'url' => admin_url( 'admin.php?page=olama-school-curriculum' ), 'capability' => 'olama_access_curriculum_mgmt', 'color' => '#1a56db' ],
                     [ 'id' => 'school.exams', 'label' => __( 'Exams',             'olama-dashboard' ), 'icon' => 'dashicons-edit',                 'url' => admin_url( 'admin.php?page=olama-school-exams' ), 'capability' => 'olama_access_exams_mgmt', 'color' => '#1a56db' ],
                     [ 'id' => 'school.evaluation', 'label' => __( 'Evaluation',        'olama-dashboard' ), 'icon' => 'dashicons-star-filled',          'url' => admin_url( 'admin.php?page=olama-school-evaluation' ), 'capability' => 'olama_access_evaluation', 'color' => '#1a56db' ],
@@ -662,6 +668,13 @@ class Olama_Dashboard_Admin {
          * @param array[] $cards The full card registry.
          */
         return apply_filters( 'olama_dashboard_cards', $cards );
+    }
+
+    private function school_label( $text ) {
+        if ( class_exists( 'Olama_School_Helpers' ) ) {
+            return Olama_School_Helpers::translate( $text );
+        }
+        return __( $text, 'olama-dashboard' );
     }
 
     /**
