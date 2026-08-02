@@ -22,6 +22,12 @@ class Olama_Dashboard_Admin {
         add_action( 'admin_menu',             [ $this, 'simplify_sidebar' ], 999 );
         add_action( 'admin_enqueue_scripts',  [ $this, 'enqueue_assets'   ] );
         add_action( 'admin_init',             [ $this, 'maybe_redirect'   ] );
+        add_action( 'admin_init',             [ $this, 'maybe_refresh_pending_registry' ], 100 );
+        add_action( 'admin_post_olama_dashboard_refresh_registry', [ $this, 'handle_registry_refresh' ] );
+        add_action( 'olama_users_capabilities_updated', [ $this, 'refresh_after_capability_update' ], 10, 3 );
+        add_action( 'upgrader_process_complete', [ $this, 'mark_registry_refresh_pending' ], 10, 0 );
+        add_action( 'activated_plugin', [ $this, 'mark_registry_refresh_pending' ], 10, 0 );
+        add_action( 'deactivated_plugin', [ $this, 'mark_registry_refresh_pending' ], 10, 0 );
         add_action( 'wp_before_admin_bar_render', [ $this, 'simplify_admin_bar' ] );
         add_action( 'wp_ajax_olama_dashboard_toggle_quick_action', [ $this, 'ajax_toggle_quick_action' ] );
     }
@@ -37,6 +43,15 @@ class Olama_Dashboard_Admin {
             [ $this, 'render_hub' ],
             'dashicons-layout',
             2                                // position 2: just below WP Dashboard
+        );
+
+        add_submenu_page(
+            'olama-dashboard',
+            __( 'Refresh Olama Hub', 'olama-dashboard' ),
+            __( 'Refresh', 'olama-dashboard' ),
+            'manage_options',
+            'olama-dashboard-refresh',
+            [ $this, 'render_registry_refresh_page' ]
         );
     }
 
@@ -74,6 +89,116 @@ class Olama_Dashboard_Admin {
 
     public function render_hub() {
         include OLAMA_DASH_PATH . 'admin/views/hub.php';
+    }
+
+    /**
+     * Render the administrator-only registry refresh screen.
+     */
+    public function render_registry_refresh_page() {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_die( esc_html__( 'You do not have permission to refresh Olama Hub.', 'olama-dashboard' ), '', [ 'response' => 403 ] );
+        }
+
+        $notice_key = 'olama_dashboard_refresh_notice_' . get_current_user_id();
+        $notice = get_transient( $notice_key );
+        if ( $notice ) {
+            delete_transient( $notice_key );
+        }
+        $last_refresh = get_option( 'olama_dashboard_last_registry_refresh', [] );
+        ?>
+        <div class="wrap">
+            <h1><?php esc_html_e( 'Refresh Olama Hub', 'olama-dashboard' ); ?></h1>
+            <?php if ( is_array( $notice ) && ! empty( $notice['message'] ) ) : ?>
+                <div class="notice notice-<?php echo esc_attr( $notice['type'] ?? 'success' ); ?> is-dismissible">
+                    <p><?php echo esc_html( $notice['message'] ); ?></p>
+                </div>
+            <?php endif; ?>
+            <p><?php esc_html_e( 'Rebuild the modules, actions, and capabilities shown by Olama Hub from all currently active plugins.', 'olama-dashboard' ); ?></p>
+            <?php if ( ! empty( $last_refresh['time'] ) ) : ?>
+                <p>
+                    <strong><?php esc_html_e( 'Last refresh:', 'olama-dashboard' ); ?></strong>
+                    <?php echo esc_html( $last_refresh['time'] ); ?>
+                    <?php if ( ! empty( $last_refresh['source'] ) ) : ?>
+                        (<?php echo esc_html( $last_refresh['source'] ); ?>)
+                    <?php endif; ?>
+                </p>
+            <?php endif; ?>
+            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+                <input type="hidden" name="action" value="olama_dashboard_refresh_registry">
+                <?php wp_nonce_field( 'olama_dashboard_refresh_registry' ); ?>
+                <?php submit_button( __( 'Refresh Modules and Actions', 'olama-dashboard' ), 'primary', 'submit', false ); ?>
+            </form>
+        </div>
+        <?php
+    }
+
+    /**
+     * Rebuild Hub and OLAMA Users registries and persist a refresh summary.
+     */
+    public function refresh_modules_and_actions( $source = 'manual' ) {
+        if ( ! class_exists( 'Olama_Users_Registry' ) || ! method_exists( 'Olama_Users_Registry', 'refresh' ) ) {
+            return new WP_Error( 'registry_unavailable', __( 'OLAMA Users registry is unavailable.', 'olama-dashboard' ) );
+        }
+
+        $users_summary = Olama_Users_Registry::refresh();
+        $cards = $this->build_registry();
+        $action_count = 0;
+        foreach ( $cards as $card ) {
+            $action_count += count( (array) ( $card['submenus'] ?? [] ) );
+        }
+
+        $summary = [
+            'time'         => current_time( 'mysql' ),
+            'source'       => sanitize_key( $source ),
+            'modules'      => (int) ( $users_summary['modules'] ?? 0 ),
+            'capabilities' => (int) ( $users_summary['capabilities'] ?? 0 ),
+            'hub_cards'    => count( $cards ),
+            'hub_actions'  => $action_count,
+        ];
+        update_option( 'olama_dashboard_last_registry_refresh', $summary, false );
+        do_action( 'olama_dashboard_registry_refreshed', $summary );
+
+        return $summary;
+    }
+
+    public function handle_registry_refresh() {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_die( esc_html__( 'You do not have permission to refresh Olama Hub.', 'olama-dashboard' ), '', [ 'response' => 403 ] );
+        }
+        check_admin_referer( 'olama_dashboard_refresh_registry' );
+
+        $result = $this->refresh_modules_and_actions( 'manual' );
+        $notice = is_wp_error( $result )
+            ? [ 'type' => 'error', 'message' => $result->get_error_message() ]
+            : [
+                'type' => 'success',
+                'message' => sprintf(
+                    __( 'Olama Hub refreshed: %1$d modules, %2$d capabilities, %3$d cards, and %4$d actions.', 'olama-dashboard' ),
+                    $result['modules'],
+                    $result['capabilities'],
+                    $result['hub_cards'],
+                    $result['hub_actions']
+                ),
+            ];
+        set_transient( 'olama_dashboard_refresh_notice_' . get_current_user_id(), $notice, 5 * MINUTE_IN_SECONDS );
+        wp_safe_redirect( admin_url( 'admin.php?page=olama-dashboard-refresh' ) );
+        exit;
+    }
+
+    public function refresh_after_capability_update( $role_key, $plugin_id, $result ) {
+        $this->refresh_modules_and_actions( 'capabilities' );
+    }
+
+    public function mark_registry_refresh_pending() {
+        update_option( 'olama_dashboard_registry_refresh_pending', 1, false );
+    }
+
+    public function maybe_refresh_pending_registry() {
+        if ( ! get_option( 'olama_dashboard_registry_refresh_pending', false ) ) {
+            return;
+        }
+        delete_option( 'olama_dashboard_registry_refresh_pending' );
+        $this->refresh_modules_and_actions( 'plugin_update' );
     }
 
     // ── Optional redirect ─────────────────────────────────────────────────────
