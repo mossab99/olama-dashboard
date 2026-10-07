@@ -18,6 +18,7 @@ class Olama_Dashboard_Admin {
         }
         // Priority 99 on admin_menu: all sibling plugin menus are registered at 10.
         add_action( 'admin_menu',             [ $this, 'register_menu'    ], 99  );
+        add_action( 'admin_menu',             [ $this, 'capture_plugin_menus' ], 998 );
         // Priority 999: runs after all plugins register their menus, so we can remove selectively.
         add_action( 'admin_menu',             [ $this, 'simplify_sidebar' ], 999 );
         add_action( 'admin_enqueue_scripts',  [ $this, 'enqueue_assets'   ] );
@@ -222,6 +223,7 @@ class Olama_Dashboard_Admin {
     }
 
     public function mark_registry_refresh_pending() {
+        delete_option( 'olama_dashboard_menu_snapshot' );
         update_option( 'olama_dashboard_registry_refresh_pending', 1, false );
     }
 
@@ -490,7 +492,7 @@ class Olama_Dashboard_Admin {
                     [ 'id' => 'school.dashboard', 'label' => __( 'Dashboard',        'olama-dashboard' ), 'icon' => 'dashicons-dashboard',            'url' => admin_url( 'admin.php?page=olama-school' ), 'capability' => 'olama_view_dashboard', 'color' => '#1a56db' ],
                     [ 'id' => 'school.reports', 'label' => __( 'Reports',           'olama-dashboard' ), 'icon' => 'dashicons-chart-bar',            'url' => admin_url( 'admin.php?page=olama-school-reports' ), 'capability' => 'olama_access_reports', 'color' => '#1a56db' ],
                     [ 'id' => 'school.weekly_plans', 'label' => __( 'Weekly Plans',      'olama-dashboard' ), 'icon' => 'dashicons-calendar-alt',         'url' => admin_url( 'admin.php?page=olama-school-plans' ), 'capability' => 'olama_access_plans_mgmt', 'color' => '#1a56db' ],
-                    [ 'id' => 'school.follow_up', 'label' => __( 'Follow Up',         'olama-dashboard' ), 'icon' => 'dashicons-visibility',           'url' => admin_url( 'admin.php?page=olama-school-follow-up' ), 'capability' => 'olama_access_followup', 'color' => '#1a56db' ],
+                    [ 'id' => 'school.follow_up', 'label' => __( 'Follow Up',         'olama-dashboard' ), 'icon' => 'dashicons-visibility',           'url' => admin_url( 'admin.php?page=olama-employees' ), 'capability' => 'olama_access_followup', 'color' => '#1a56db' ],
                     [ 'id' => 'school.academic', 'label' => __( 'Academic',          'olama-dashboard' ), 'icon' => 'dashicons-book',                 'url' => admin_url( 'admin.php?page=olama-school-academic' ), 'capability' => 'olama_access_academic_mgmt', 'color' => '#1a56db' ],
                     [ 'id' => 'school.academic.calendar', 'label' => $this->school_label( 'Academic Calendar' ), 'icon' => 'dashicons-calendar-alt', 'url' => admin_url( 'admin.php?page=olama-school-academic&tab=calendar' ), 'capability' => 'olama_manage_academic_calendar', 'color' => '#1a56db' ],
                     [ 'id' => 'school.academic.grades', 'label' => $this->school_label( 'Grades & Sections' ), 'icon' => 'dashicons-networking', 'url' => admin_url( 'admin.php?page=olama-school-academic&tab=grades' ), 'capability' => 'olama_manage_academic_grades', 'color' => '#1a56db' ],
@@ -499,14 +501,14 @@ class Olama_Dashboard_Admin {
                     [ 'id' => 'school.academic.stationary', 'label' => $this->school_label( 'Stationary' ), 'icon' => 'dashicons-edit-page', 'url' => admin_url( 'admin.php?page=olama-school-academic&tab=stationary' ), 'capability' => 'olama_manage_academic_stationary', 'color' => '#1a56db' ],
                     [ 'id' => 'school.academic.office_hours', 'label' => $this->school_label( 'Office Hours' ), 'icon' => 'dashicons-clock', 'url' => admin_url( 'admin.php?page=olama-school-academic&tab=office_hours' ), 'capability' => 'olama_manage_academic_office_hours', 'color' => '#1a56db' ],
                     [ 'id' => 'school.curriculum', 'label' => __( 'Curriculum',        'olama-dashboard' ), 'icon' => 'dashicons-list-view',            'url' => admin_url( 'admin.php?page=olama-school-curriculum' ), 'capability' => 'olama_access_curriculum_mgmt', 'color' => '#1a56db' ],
-                    [ 'id' => 'school.exams', 'label' => __( 'Exams',             'olama-dashboard' ), 'icon' => 'dashicons-edit',                 'url' => admin_url( 'admin.php?page=olama-school-exams' ), 'capability' => 'olama_access_exams_mgmt', 'color' => '#1a56db' ],
-                    [ 'id' => 'school.evaluation', 'label' => __( 'Evaluation',        'olama-dashboard' ), 'icon' => 'dashicons-star-filled',          'url' => admin_url( 'admin.php?page=olama-school-evaluation' ), 'capability' => 'olama_access_evaluation', 'color' => '#1a56db' ],
-                    [ 'id' => 'school.supervision', 'label' => __( 'Supervision',       'olama-dashboard' ), 'icon' => 'dashicons-admin-users',          'url' => admin_url( 'admin.php?page=olama-school-supervision' ), 'capability' => 'olama_access_supervision', 'color' => '#1a56db' ],
+                    [ 'id' => 'school.exams', 'label' => __( 'Exams',             'olama-dashboard' ), 'icon' => 'dashicons-edit',                 'url' => admin_url( 'admin.php?page=olama-exam-management' ), 'capability' => 'olama_access_exams_mgmt', 'color' => '#1a56db' ],
+                    [ 'id' => 'school.evaluation', 'label' => __( 'Evaluation',        'olama-dashboard' ), 'icon' => 'dashicons-star-filled',          'url' => admin_url( 'admin.php?page=olama-student-evaluation' ), 'capability' => 'olama_access_evaluation', 'color' => '#1a56db' ],
+                    [ 'id' => 'school.supervision', 'label' => __( 'Supervision',       'olama-dashboard' ), 'icon' => 'dashicons-admin-users',          'url' => admin_url( 'admin.php?page=olama-supervision' ), 'capability' => 'olama_access_supervision', 'color' => '#1a56db' ],
                     [ 'id' => 'school.users', 'label' => __( 'Users',             'olama-dashboard' ), 'icon' => 'dashicons-groups',               'url' => admin_url( 'admin.php?page=olama-core-users' ), 'capability' => 'olama_access_users_mgmt', 'color' => '#1a56db' ],
-                    [ 'id' => 'school.kg', 'label' => __( 'KG',                'olama-dashboard' ), 'icon' => 'dashicons-smiley',               'url' => admin_url( 'admin.php?page=olama-school-kg' ), 'capability' => 'olama_access_evaluation', 'color' => '#1a56db' ],
-                    [ 'id' => 'school.transport', 'label' => __( 'Transport',         'olama-dashboard' ), 'icon' => 'dashicons-car',                  'url' => admin_url( 'admin.php?page=olama-school-transport' ), 'capability' => 'olama_access_transport_mgmt', 'color' => '#1a56db' ],
+                    [ 'id' => 'school.kg', 'label' => __( 'KG',                'olama-dashboard' ), 'icon' => 'dashicons-smiley',               'url' => admin_url( 'admin.php?page=olama-kg' ), 'capability' => 'olama_access_kg', 'color' => '#1a56db' ],
+                    [ 'id' => 'school.transport', 'label' => __( 'Transport',         'olama-dashboard' ), 'icon' => 'dashicons-car',                  'url' => admin_url( 'admin.php?page=olama-transportation' ), 'capability' => 'olama_access_transport_mgmt', 'color' => '#1a56db' ],
                     [ 'id' => 'school.settings', 'label' => __( 'Settings',          'olama-dashboard' ), 'icon' => 'dashicons-admin-settings',       'url' => admin_url( 'admin.php?page=olama-school-settings' ), 'capability' => 'olama_access_settings_mgmt', 'color' => '#1a56db' ],
-                    [ 'id' => 'school.exam_halls', 'label' => __( 'Exam Hall',         'olama-dashboard' ), 'icon' => 'dashicons-building',             'url' => admin_url( 'admin.php?page=olama-school-exam-halls' ), 'capability' => 'olama_access_exam_halls', 'color' => '#1a56db' ],
+                    [ 'id' => 'school.exam_halls', 'label' => __( 'Exam Hall',         'olama-dashboard' ), 'icon' => 'dashicons-building',             'url' => admin_url( 'admin.php?page=olama-exam-halls' ), 'capability' => 'olama_access_exam_halls', 'color' => '#1a56db' ],
                 ],
             ],
 
@@ -525,7 +527,7 @@ class Olama_Dashboard_Admin {
                     [ 'id' => 'billing.hub', 'label' => __( 'Customer Hub',       'olama-dashboard' ), 'icon' => 'dashicons-store',               'url' => admin_url( 'admin.php?page=olama-registration' ), 'capability' => 'olama_manage_registration_families', 'color' => '#00a32a' ],
                     [ 'id' => 'billing.contacts', 'label' => __( 'Contacts',           'olama-dashboard' ), 'icon' => 'dashicons-id',                  'url' => admin_url( 'admin.php?page=olama-registration-contacts' ), 'capability' => 'olama_manage_registration_families', 'color' => '#00a32a' ],
                     [ 'id' => 'billing.fees', 'label' => __( 'Fee Templates',      'olama-dashboard' ), 'icon' => 'dashicons-tag',                 'url' => admin_url( 'admin.php?page=olama-registration-fees' ), 'capability' => 'olama_manage_registration_fees', 'color' => '#00a32a' ],
-                    [ 'id' => 'billing.agreements', 'label' => __( 'Agreements',         'olama-dashboard' ), 'icon' => 'dashicons-media-document',      'url' => admin_url( 'admin.php?page=olama-registration-agreements' ), 'capability' => 'manage_options', 'color' => '#00a32a' ],
+                    [ 'id' => 'billing.agreements', 'label' => __( 'Agreements',         'olama-dashboard' ), 'icon' => 'dashicons-media-document',      'url' => admin_url( 'admin.php?page=olama-registration-agreements' ), 'capability' => 'olama_manage_registration_agreements', 'color' => '#00a32a' ],
                     [ 'id' => 'billing.invoices', 'label' => __( 'Invoices',           'olama-dashboard' ), 'icon' => 'dashicons-clipboard',           'url' => admin_url( 'admin.php?page=olama-registration-invoices' ), 'capability' => 'olama_manage_registration_invoices', 'color' => '#00a32a' ],
                     [ 'id' => 'billing.payments', 'label' => __( 'Payments',           'olama-dashboard' ), 'icon' => 'dashicons-bank',                'url' => admin_url( 'admin.php?page=olama-registration-payments' ), 'capability' => 'olama_manage_registration_payments', 'color' => '#00a32a' ],
                     [ 'id' => 'billing.financial_accounts', 'label' => __( 'Financial Accounts', 'olama-dashboard' ), 'icon' => 'dashicons-chart-pie',           'url' => admin_url( 'admin.php?page=olama-registration-financial-accounts' ), 'capability' => 'olama_manage_financial_accounts', 'color' => '#00a32a' ],
@@ -595,7 +597,7 @@ class Olama_Dashboard_Admin {
                 'submenus'    => [
                     [ 'id' => 'stores.dashboard', 'label' => __( 'Dashboard',          'olama-dashboard' ), 'icon' => 'dashicons-dashboard',       'url' => admin_url( 'admin.php?page=olama-stores' ), 'capability' => 'os_view_items', 'color' => '#ef4444' ],
                     [ 'id' => 'stores.items', 'label' => __( 'Item Registry',      'olama-dashboard' ), 'icon' => 'dashicons-list-view',       'url' => admin_url( 'admin.php?page=olama-stores-items' ), 'capability' => 'os_view_items', 'color' => '#ef4444' ],
-                    [ 'id' => 'stores.add_items', 'label' => __( 'Add Items',          'olama-dashboard' ), 'icon' => 'dashicons-plus-alt',        'url' => admin_url( 'admin.php?page=olama-stores-add-items' ), 'capability' => 'os_manage_items', 'color' => '#ef4444' ],
+                    [ 'id' => 'stores.add_items', 'label' => __( 'Add Items',          'olama-dashboard' ), 'icon' => 'dashicons-plus-alt',        'url' => admin_url( 'admin.php?page=olama-stores-add-items' ), 'capability' => 'os_receive_stock', 'color' => '#ef4444' ],
                     [ 'id' => 'stores.stock', 'label' => __( 'Stock',              'olama-dashboard' ), 'icon' => 'dashicons-store',           'url' => admin_url( 'admin.php?page=olama-stores-stock' ), 'capability' => 'os_view_stock', 'color' => '#ef4444' ],
                     [ 'id' => 'stores.custody', 'label' => __( 'Employee Custody',   'olama-dashboard' ), 'icon' => 'dashicons-businessman',     'url' => admin_url( 'admin.php?page=olama-stores-assignments' ), 'capability' => 'os_view_assignments', 'color' => '#ef4444' ],
                     [ 'id' => 'stores.student_withdrawals', 'label' => __( 'Student Withdrawals','olama-dashboard' ), 'icon' => 'dashicons-migrate',         'url' => admin_url( 'admin.php?page=olama-stores-withdrawals' ), 'capability' => 'os_view_assignments', 'color' => '#ef4444' ],
@@ -621,9 +623,10 @@ class Olama_Dashboard_Admin {
                 'submenus'    => [
                     [ 'id' => 'oracle.dashboard', 'label' => __( 'Dashboard',   'olama-dashboard' ), 'icon' => 'dashicons-dashboard',       'url' => admin_url( 'admin.php?page=olama-oracle-sync' ), 'capability' => 'olama_access_oracle_sync', 'color' => '#0ea5e9' ],
                     [ 'id' => 'oracle.settings', 'label' => __( 'Settings',    'olama-dashboard' ), 'icon' => 'dashicons-admin-settings',  'url' => admin_url( 'admin.php?page=olama-oracle-sync-settings' ), 'capability' => 'olama_access_oracle_sync', 'color' => '#0ea5e9' ],
-                    [ 'id' => 'oracle.manual', 'label' => __( 'Manual Sync', 'olama-dashboard' ), 'icon' => 'dashicons-controls-play',   'url' => admin_url( 'admin.php?page=olama-oracle-sync-manual' ), 'capability' => 'olama_access_oracle_sync', 'color' => '#0ea5e9' ],
+                    [ 'id' => 'oracle.manual', 'label' => __( 'Synchronization', 'olama-dashboard' ), 'icon' => 'dashicons-controls-play',   'url' => admin_url( 'admin.php?page=olama-oracle-sync-jobs' ), 'capability' => 'olama_access_oracle_sync', 'color' => '#0ea5e9' ],
                     [ 'id' => 'oracle.runs', 'label' => __( 'Sync Runs',   'olama-dashboard' ), 'icon' => 'dashicons-clock',           'url' => admin_url( 'admin.php?page=olama-oracle-sync-runs' ), 'capability' => 'olama_access_oracle_sync', 'color' => '#0ea5e9' ],
                     [ 'id' => 'oracle.validation', 'label' => __( 'Validation',  'olama-dashboard' ), 'icon' => 'dashicons-yes-alt',         'url' => admin_url( 'admin.php?page=olama-oracle-sync-validation' ), 'capability' => 'olama_access_oracle_sync', 'color' => '#0ea5e9' ],
+                    [ 'id' => 'oracle.diagnostics', 'label' => __( 'Bridge Diagnostics', 'olama-dashboard' ), 'icon' => 'dashicons-admin-tools', 'url' => admin_url( 'admin.php?page=olama-oracle-sync-api-map' ), 'capability' => 'olama_access_oracle_sync', 'color' => '#0ea5e9' ],
                 ],
             ],
 
@@ -640,6 +643,7 @@ class Olama_Dashboard_Admin {
                 'primary_url' => admin_url( 'admin.php?page=olama-tools' ),
                 'submenus'    => [
                     [ 'id' => 'tools.monitor', 'label' => __( 'Performance Monitor', 'olama-dashboard' ), 'icon' => 'dashicons-chart-line', 'url' => admin_url( 'admin.php?page=olama-performance-monitor' ), 'capability' => 'olama_access_tools', 'color' => '#10b981' ],
+                    [ 'id' => 'tools.security', 'label' => __( 'Security Monitor', 'olama-dashboard' ), 'icon' => 'dashicons-shield', 'url' => admin_url( 'admin.php?page=olama-security-monitor' ), 'capability' => 'manage_options', 'color' => '#10b981' ],
                 ],
             ],
 
@@ -667,7 +671,140 @@ class Olama_Dashboard_Admin {
          *
          * @param array[] $cards The full card registry.
          */
-        return apply_filters( 'olama_dashboard_cards', $cards );
+        $cards[] = [
+            'id' => 'olama-emis',
+            'label' => __( 'Olama EMIS Interface', 'olama-dashboard' ),
+            'description' => __( 'Ministry records for schools, students, buildings, classrooms, facilities and staff.', 'olama-dashboard' ),
+            'icon' => 'dashicons-chart-area',
+            'accent' => '#0891b2',
+            'accent_rgb' => '8,145,178',
+            'active' => defined( 'OLAMA_EMIS_VERSION' ),
+            'capability' => 'olama_users_ministry_view',
+            'primary_url' => admin_url( 'admin.php?page=olama-emis' ),
+            'submenus' => array_map( static function ( $slug, $label ) {
+                return [
+                    'id' => 'emis.' . $slug, 'label' => $label,
+                    'icon' => 'dashicons-chart-area',
+                    'url' => admin_url( 'admin.php?page=olama-emis' . ( $slug === 'dashboard' ? '' : '-' . $slug ) ),
+                    'capability' => 'olama_users_ministry_view', 'color' => '#0891b2',
+                ];
+            }, [ 'dashboard', 'students', 'schools', 'buildings', 'classrooms', 'facilities', 'staff', 'qualifications' ], [
+                __( 'Overview', 'olama-dashboard' ), __( 'Students', 'olama-dashboard' ),
+                __( 'Schools', 'olama-dashboard' ), __( 'Buildings', 'olama-dashboard' ),
+                __( 'Classrooms', 'olama-dashboard' ), __( 'Facilities', 'olama-dashboard' ),
+                __( 'Staff', 'olama-dashboard' ), __( 'Qualifications and Teaching Loads', 'olama-dashboard' ),
+            ] ),
+        ];
+
+        return $this->sync_plugin_menus( apply_filters( 'olama_dashboard_cards', $cards ) );
+    }
+
+    /** Save the complete administrator menu before the staff sidebar is simplified.
+     * The snapshot also supplies discovered actions in AJAX/admin-post requests,
+     * where WordPress does not execute admin_menu.
+     */
+    public function capture_plugin_menus() {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            return;
+        }
+        global $menu, $submenu, $_registered_pages;
+        $snapshot = [ 'parents' => [], 'pages' => [], 'plugins' => get_option( 'active_plugins', [] ) ];
+        foreach ( (array) $menu as $item ) {
+            $slug = $item[2] ?? '';
+            if ( $slug === 'olama-dashboard' || ! preg_match( '/^(olama-|academy-media-library$)/', $slug ) ) {
+                continue;
+            }
+            $snapshot['parents'][ $slug ] = [
+                'label' => wp_strip_all_tags( $item[0] ), 'capability' => $item[1],
+                'icon' => isset( $item[6] ) && strpos( $item[6], 'dashicons-' ) === 0 ? $item[6] : 'dashicons-layout',
+                'submenus' => [],
+            ];
+            foreach ( (array) ( $submenu[ $slug ] ?? [] ) as $sub ) {
+                $snapshot['parents'][ $slug ]['submenus'][ $sub[2] ] = [
+                    'label' => wp_strip_all_tags( $sub[0] ), 'capability' => $sub[1],
+                ];
+            }
+        }
+        $snapshot['pages'] = array_keys( (array) $_registered_pages );
+        update_option( 'olama_dashboard_menu_snapshot', $snapshot, false );
+    }
+
+    private function sync_plugin_menus( $cards ) {
+        $snapshot = get_option( 'olama_dashboard_menu_snapshot', [] );
+        if ( empty( $snapshot['parents'] ) || ( $snapshot['plugins'] ?? [] ) !== get_option( 'active_plugins', [] ) ) {
+            return $cards;
+        }
+        $parents = $snapshot['parents'];
+        $all_items = [];
+        foreach ( $parents as $slug => $item ) {
+            $all_items[ $slug ] = $item;
+            $all_items = array_replace( $all_items, $item['submenus'] );
+        }
+        $represented = [];
+        foreach ( $cards as &$card ) {
+            if ( empty( $card['active'] ) ) {
+                continue;
+            }
+            parse_str( (string) wp_parse_url( $card['primary_url'], PHP_URL_QUERY ), $query );
+            $parent = $query['page'] ?? $card['id'];
+            $represented[ $parent ] = true;
+            $items = $parents[ $parent ]['submenus'] ?? [];
+            $actions = [];
+            $linked = [];
+            foreach ( $card['submenus'] as $action ) {
+                parse_str( (string) wp_parse_url( $action['url'], PHP_URL_QUERY ), $args );
+                $page = $args['page'] ?? '';
+                if ( $page && ! isset( $all_items[ $page ] ) && ! in_array( get_plugin_page_hookname( $page, $parent ), $snapshot['pages'], true ) && ! in_array( get_plugin_page_hookname( $page, null ), $snapshot['pages'], true ) ) {
+                    continue;
+                }
+                // Tabs can have stricter capabilities than their menu container.
+                if ( isset( $all_items[ $page ] ) && count( $args ) === 1 && $all_items[ $page ]['capability'] !== 'read' ) {
+                    $action['capability'] = $all_items[ $page ]['capability'];
+                }
+                $actions[] = $action;
+                if ( count( $args ) === 1 ) {
+                    $linked[ $page ] = true;
+                }
+            }
+            foreach ( $items as $slug => $item ) {
+                if ( isset( $linked[ $slug ] ) ) {
+                    continue;
+                }
+                $actions[] = [
+                    'id' => $card['id'] . '.menu.' . sanitize_key( $slug ),
+                    'label' => $item['label'], 'capability' => $item['capability'],
+                    'url' => admin_url( 'admin.php?page=' . $slug ),
+                    'icon' => $card['icon'], 'color' => $card['accent'],
+                ];
+            }
+            $card['submenus'] = $actions;
+            if ( ! isset( $parents[ $parent ] ) && ! empty( $actions ) ) {
+                $card['primary_url'] = $actions[0]['url'];
+                $card['capability'] = $actions[0]['capability'];
+            }
+        }
+        unset( $card );
+        foreach ( $parents as $slug => $item ) {
+            if ( isset( $represented[ $slug ] ) ) {
+                continue;
+            }
+            $actions = [];
+            foreach ( [ $slug => $item ] + $item['submenus'] as $page => $sub ) {
+                $actions[] = [
+                    'id' => $slug . '.menu.' . sanitize_key( $page ),
+                    'label' => $sub['label'], 'capability' => $sub['capability'],
+                    'url' => admin_url( 'admin.php?page=' . $page ),
+                    'icon' => $item['icon'], 'color' => '#1a56db',
+                ];
+            }
+            $cards[] = [
+                'id' => $slug, 'label' => $item['label'], 'description' => '',
+                'icon' => $item['icon'], 'accent' => '#1a56db', 'accent_rgb' => '26,86,219',
+                'active' => true, 'capability' => $item['capability'],
+                'primary_url' => admin_url( 'admin.php?page=' . $slug ), 'submenus' => $actions,
+            ];
+        }
+        return $cards;
     }
 
     private function school_label( $text ) {
