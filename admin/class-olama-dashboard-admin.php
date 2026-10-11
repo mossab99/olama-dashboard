@@ -109,7 +109,18 @@ class Olama_Dashboard_Admin {
     /** The fixed attendance shortcut belongs only to the teacher Hub view. */
     public function can_use_teacher_attendance() {
         $user = wp_get_current_user();
-        return in_array( 'teacher', (array) $user->roles, true )
+        $teacher_roles = [ 'teacher', 'teachers', 'olama_teacher' ];
+        $teacher_names = [ 'teacher', 'teachers', 'معلم', 'المعلم', 'المعلمون', 'المعلمين', 'معلمون', 'معلمين' ];
+        $role_names = wp_roles()->role_names;
+        $is_teacher = false;
+        foreach ( (array) $user->roles as $role ) {
+            $name = strtolower( trim( $role_names[ $role ] ?? '' ) );
+            if ( in_array( $role, $teacher_roles, true ) || in_array( $name, $teacher_names, true ) ) {
+                $is_teacher = true;
+                break;
+            }
+        }
+        return $is_teacher
             && ! current_user_can( 'manage_options' )
             && class_exists( 'Olama_School_Permissions' )
             && Olama_School_Permissions::can( 'olama_manage_attendance' )
