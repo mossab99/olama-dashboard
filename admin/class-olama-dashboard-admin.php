@@ -99,7 +99,11 @@ class Olama_Dashboard_Admin {
                 wp_die( esc_html__( 'You do not have permission to view this page.', 'olama-dashboard' ), '', [ 'response' => 403 ] );
             }
             echo '<div class="wrap"><p><a class="button" href="' . esc_url( admin_url( 'admin.php?page=olama-dashboard' ) ) . '">' . esc_html__( 'Olama Hub', 'olama-dashboard' ) . '</a></p>';
-            echo do_shortcode( '[olama_attendance]' );
+            if ( shortcode_exists( 'olama_attendance' ) ) {
+                echo do_shortcode( '[olama_attendance]' );
+            } else {
+                echo '<div class="notice notice-warning"><p>' . esc_html__( 'Activate the updated Olama School plugin to enable attendance.', 'olama-dashboard' ) . '</p></div>';
+            }
             echo '</div>';
             return;
         }
@@ -121,11 +125,7 @@ class Olama_Dashboard_Admin {
             }
         }
         return $is_teacher
-            && ! current_user_can( 'manage_options' )
-            && class_exists( 'Olama_School_Permissions' )
-            && Olama_School_Permissions::can( 'olama_manage_attendance' )
-            && defined( 'OLAMA_STUDENT_EVALUATION_PATH' )
-            && shortcode_exists( 'olama_attendance' );
+            && ! current_user_can( 'manage_options' );
     }
 
     /**
@@ -917,7 +917,9 @@ class Olama_Dashboard_Admin {
     public function render_quick_actions_tray_inner( $pinned = null ) {
         $has_fixed_attendance = $this->can_use_teacher_attendance();
         if ( $has_fixed_attendance ) {
-            $label = Olama_School_Helpers::translate( 'Student Attendance' );
+            $label = class_exists( 'Olama_School_Helpers' )
+                ? Olama_School_Helpers::translate( 'Student Attendance' )
+                : __( 'Student Attendance', 'olama-dashboard' );
             echo '<div class="os-hub-quick-action-wrapper"><a class="os-hub-quick-action-pill" style="--action-color: #2563eb;" href="' . esc_url( admin_url( 'admin.php?page=olama-dashboard&view=attendance' ) ) . '">';
             echo '<span class="dashicons dashicons-yes-alt" aria-hidden="true"></span><span class="os-hub-quick-action-label" dir="auto">' . esc_html( $label ) . '</span></a></div>';
         }
