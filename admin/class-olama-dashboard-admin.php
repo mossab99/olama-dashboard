@@ -136,7 +136,7 @@ class Olama_Dashboard_Admin {
             'schedule' => ['label' => __( 'Teacher Classes Schedule', 'olama-dashboard' ), 'icon' => 'calendar-alt', 'shortcode' => 'olama_logged_teacher_schedule'],
             'shifts' => ['label' => __( 'Teacher Shifts', 'olama-dashboard' ), 'icon' => 'clock', 'shortcode' => 'olama_logged_user_shifts'],
             'exam-attendance' => ['label' => __( 'Exam Halls Attendance', 'olama-dashboard' ), 'icon' => 'building', 'shortcode' => 'olama_exam_halls_attendance'],
-            'students' => ['label' => __( 'Grade / Section Students (ID & Mother Mobile)', 'olama-dashboard' ), 'icon' => 'groups', 'shortcode' => 'olama_section_students'],
+            'students' => ['label' => __( 'Grade / Section Students (Family ID & Mother Mobile)', 'olama-dashboard' ), 'icon' => 'groups', 'shortcode' => 'olama_section_students'],
         ];
     }
 
