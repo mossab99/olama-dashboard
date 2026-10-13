@@ -94,13 +94,15 @@ class Olama_Dashboard_Admin {
     // ── Render ────────────────────────────────────────────────────────────────
 
     public function render_hub() {
-        if ( isset( $_GET['view'] ) && 'attendance' === sanitize_key( wp_unslash( $_GET['view'] ) ) ) {
+        $tasks = $this->get_daily_tasks();
+        $view = isset( $_GET['view'] ) ? sanitize_key( wp_unslash( $_GET['view'] ) ) : '';
+        if ( isset( $tasks[$view] ) ) {
             if ( ! olama_dashboard_can_access() || ! $this->can_use_teacher_attendance() ) {
                 wp_die( esc_html__( 'You do not have permission to view this page.', 'olama-dashboard' ), '', [ 'response' => 403 ] );
             }
             echo '<div class="wrap"><p><a class="button" href="' . esc_url( admin_url( 'admin.php?page=olama-dashboard' ) ) . '">' . esc_html__( 'Olama Hub', 'olama-dashboard' ) . '</a></p>';
-            if ( shortcode_exists( 'olama_attendance' ) ) {
-                echo do_shortcode( '[olama_attendance]' );
+            if ( shortcode_exists( $tasks[$view]['shortcode'] ) ) {
+                echo do_shortcode( '[' . $tasks[$view]['shortcode'] . ']' );
             } else {
                 echo '<div class="notice notice-warning"><p>' . esc_html__( 'Activate the updated Olama School plugin to enable attendance.', 'olama-dashboard' ) . '</p></div>';
             }
@@ -126,6 +128,16 @@ class Olama_Dashboard_Admin {
         }
         return $is_teacher
             && ! current_user_can( 'manage_options' );
+    }
+
+    public function get_daily_tasks() {
+        return [
+            'attendance' => ['label' => __( 'Daily Attendance', 'olama-dashboard' ), 'icon' => 'yes-alt', 'shortcode' => 'olama_attendance'],
+            'schedule' => ['label' => __( 'Teacher Classes Schedule', 'olama-dashboard' ), 'icon' => 'calendar-alt', 'shortcode' => 'olama_logged_teacher_schedule'],
+            'shifts' => ['label' => __( 'Teacher Shifts', 'olama-dashboard' ), 'icon' => 'clock', 'shortcode' => 'olama_logged_user_shifts'],
+            'exam-attendance' => ['label' => __( 'Exam Halls Attendance', 'olama-dashboard' ), 'icon' => 'building', 'shortcode' => 'olama_exam_halls_attendance'],
+            'students' => ['label' => __( 'Grade / Section Students (ID & Mother Mobile)', 'olama-dashboard' ), 'icon' => 'groups', 'shortcode' => 'olama_section_students'],
+        ];
     }
 
     /**
@@ -915,14 +927,6 @@ class Olama_Dashboard_Admin {
      * Helper to render the Quick Actions tray content.
      */
     public function render_quick_actions_tray_inner( $pinned = null ) {
-        $has_fixed_attendance = $this->can_use_teacher_attendance();
-        if ( $has_fixed_attendance ) {
-            $label = class_exists( 'Olama_School_Helpers' )
-                ? Olama_School_Helpers::translate( 'Student Attendance' )
-                : __( 'Student Attendance', 'olama-dashboard' );
-            echo '<div class="os-hub-quick-action-wrapper"><a class="os-hub-quick-action-pill" style="--action-color: #2563eb;" href="' . esc_url( admin_url( 'admin.php?page=olama-dashboard&view=attendance' ) ) . '">';
-            echo '<span class="dashicons dashicons-yes-alt" aria-hidden="true"></span><span class="os-hub-quick-action-label" dir="auto">' . esc_html( $label ) . '</span></a></div>';
-        }
         if ( $pinned === null ) {
             $pinned = get_user_meta( get_current_user_id(), 'olama_dashboard_quick_actions', true );
             if ( ! is_array( $pinned ) ) {
@@ -942,7 +946,7 @@ class Olama_Dashboard_Admin {
             $visible_actions[] = $action_data;
         }
 
-        if ( empty( $visible_actions ) && ! $has_fixed_attendance ) {
+        if ( empty( $visible_actions ) ) {
             echo '<div class="os-hub-quick-actions-empty">';
             echo esc_html__( 'Pin actions from any module to add them here.', 'olama-dashboard' );
             echo '</div>';
