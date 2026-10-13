@@ -18,7 +18,7 @@ expect_counts(Olama_Attendance_Monitor::summarize($students, $records, [1 => tru
 require dirname(__DIR__) . '/admin/class-olama-dashboard-admin.php';
 $caps = []; $roles = [];
 function current_user_can($cap) { global $caps; return in_array($cap, $caps, true); }
-function wp_get_current_user() { global $roles; return (object) ['roles' => $roles]; }
+function wp_get_current_user() { global $roles; return (object) ['ID' => 7, 'roles' => $roles]; }
 function wp_roles() { return (object) ['role_names' => ['custom_assistant' => 'المساعد']]; }
 $hub = new Olama_Dashboard_Admin(false);
 if ($hub->can_use_monitor()) { throw new RuntimeException('Unprivileged user can access Monitor'); }
@@ -26,10 +26,18 @@ $roles = ['teacher'];
 if ($hub->can_use_monitor()) { throw new RuntimeException('Teacher can access Monitor without permission'); }
 $roles = ['assistant'];
 if (!$hub->can_use_monitor()) { throw new RuntimeException('Assistant must have Monitor access'); }
+if (!$hub->can_use_teacher_attendance()) { throw new RuntimeException('Assistant must have teacher Daily Tasks'); }
 $roles = ['custom_assistant'];
 if (!$hub->can_use_monitor()) { throw new RuntimeException('Custom assistant role must have Monitor access'); }
 $roles = []; $caps = ['manage_options'];
 if (!$hub->can_use_monitor()) { throw new RuntimeException('Administrator must have Monitor access'); }
 $caps = ['olama_monitor_attendance'];
 if (!$hub->can_use_monitor()) { throw new RuntimeException('Dedicated Monitor permission must work'); }
+require dirname(__DIR__, 2) . '/olama-school/includes/class-permissions.php';
+$caps = []; $roles = ['assistant'];
+foreach (['olama_manage_attendance', 'olama_access_exam_halls', 'olama_manage_hall_attendance'] as $cap) {
+    if (!Olama_School_Permissions::can($cap)) { throw new RuntimeException('Assistant cannot cover ' . $cap); }
+}
+$roles = ['teacher'];
+if (Olama_School_Permissions::is_assistant()) { throw new RuntimeException('Teacher incorrectly receives assistant scope'); }
 echo "Attendance monitor regression checks passed.\n";
