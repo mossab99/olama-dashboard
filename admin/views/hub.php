@@ -170,7 +170,7 @@ $hub_nonce = wp_create_nonce( 'olama_hub_nonce' );
 
 <?php // ── Page wrapper ──────────────────────────────────────────────────────── ?>
 <div class="wrap" id="os-hub-page">
-    <h1 class="screen-reader-text"><?php esc_html_e( 'Olama ERP Hub', 'olama-dashboard' ); ?></h1>
+    <h1 class="screen-reader-text"><?php esc_html_e( 'School Management System', 'olama-dashboard' ); ?></h1>
 
     <?php // ── Header ─────────────────────────────────────────────────────── ?>
     <div class="os-hub-header">
@@ -180,9 +180,6 @@ $hub_nonce = wp_create_nonce( 'olama_hub_nonce' );
             </div>
             <div>
                 <div class="os-hub-header-title">
-                    <?php esc_html_e( 'Olama ERP Hub', 'olama-dashboard' ); ?>
-                </div>
-                <div class="os-hub-header-subtitle">
                     <?php esc_html_e( 'School Management System', 'olama-dashboard' ); ?>
                 </div>
             </div>

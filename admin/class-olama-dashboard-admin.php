@@ -38,8 +38,8 @@ class Olama_Dashboard_Admin {
 
     public function register_menu() {
         add_menu_page(
-            __( 'Olama Hub', 'olama-dashboard' ),
-            __( 'Olama Hub', 'olama-dashboard' ),
+            __( 'School Management System', 'olama-dashboard' ),
+            __( 'School Management System', 'olama-dashboard' ),
             'olama_hub_access',
             'olama-dashboard',
             [ $this, 'render_hub' ],
@@ -100,7 +100,7 @@ class Olama_Dashboard_Admin {
             if ( ! olama_dashboard_can_access() || ! $this->can_use_teacher_attendance() ) {
                 wp_die( esc_html__( 'You do not have permission to view this page.', 'olama-dashboard' ), '', [ 'response' => 403 ] );
             }
-            echo '<div class="wrap"><p><a class="button" href="' . esc_url( admin_url( 'admin.php?page=olama-dashboard' ) ) . '">' . esc_html__( 'Olama Hub', 'olama-dashboard' ) . '</a></p>';
+            echo '<div class="wrap"><p><a class="button" href="' . esc_url( admin_url( 'admin.php?page=olama-dashboard' ) ) . '">' . esc_html__( 'School Management System', 'olama-dashboard' ) . '</a></p>';
             if ( shortcode_exists( $tasks[$view]['shortcode'] ) ) {
                 echo do_shortcode( '[' . $tasks[$view]['shortcode'] . ']' );
             } else {
@@ -460,7 +460,7 @@ class Olama_Dashboard_Admin {
         Olama_Users_Registry::register( [
             'id'            => 'olama_hub',
             'plugin'        => 'olama-dashboard',
-            'label'         => __( 'Olama Hub', 'olama-dashboard' ),
+            'label'         => __( 'School Management System', 'olama-dashboard' ),
             'capability'    => 'olama_hub_access',
             'default_grant' => true,
             'items'         => [],

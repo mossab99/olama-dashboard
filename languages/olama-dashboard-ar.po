@@ -13,10 +13,10 @@ msgstr ""
 "X-Generator: Poedit 3.0\n"
 
 msgid "Olama Hub"
-msgstr "بوابة علامة ERP"
+msgstr "نظام إدارة المدرسة"
 
 msgid "Olama ERP Hub"
-msgstr "بوابة علامة ERP"
+msgstr "نظام إدارة المدرسة"
 
 msgid "School Management System"
 msgstr "نظام إدارة المدرسة"
