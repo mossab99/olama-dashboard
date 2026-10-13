@@ -150,9 +150,18 @@ class Olama_Dashboard_Admin {
     }
 
     public function can_use_monitor() {
-        return current_user_can( 'manage_options' )
-            || current_user_can( 'olama_monitor_attendance' )
-            || in_array( 'assistant', (array) wp_get_current_user()->roles, true );
+        if ( current_user_can( 'manage_options' ) || current_user_can( 'olama_monitor_attendance' ) ) {
+            return true;
+        }
+        $role_names = wp_roles()->role_names;
+        foreach ( (array) wp_get_current_user()->roles as $role ) {
+            $name = strtolower( trim( $role_names[$role] ?? '' ) );
+            if ( in_array( $role, ['assistant', 'assistants', 'olama_assistant', 'olama_school_manager'], true )
+                || in_array( $name, ['assistant', 'assistants', 'مساعد', 'المساعد', 'المساعدون', 'المساعدين', 'مساعد إداري', 'مساعد اداري'], true ) ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function save_monitor_settings() {
@@ -501,6 +510,15 @@ class Olama_Dashboard_Admin {
                 'label' => __( 'Monitor', 'olama-dashboard' ),
                 'capability' => 'olama_monitor_attendance',
             ] ],
+        ] );
+        Olama_Users_Registry::register( [
+            'id' => 'olama_attendance_monitor',
+            'plugin' => 'olama-dashboard',
+            'label' => __( 'Attendance Monitor', 'olama-dashboard' ),
+            'capability' => 'olama_monitor_attendance',
+            'default_grant' => true,
+            'default_grant_roles' => ['assistant', 'assistants', 'olama_assistant', 'olama_school_manager'],
+            'items' => [],
         ] );
     }
 

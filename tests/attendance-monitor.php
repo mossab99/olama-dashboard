@@ -19,12 +19,15 @@ require dirname(__DIR__) . '/admin/class-olama-dashboard-admin.php';
 $caps = []; $roles = [];
 function current_user_can($cap) { global $caps; return in_array($cap, $caps, true); }
 function wp_get_current_user() { global $roles; return (object) ['roles' => $roles]; }
+function wp_roles() { return (object) ['role_names' => ['custom_assistant' => 'المساعد']]; }
 $hub = new Olama_Dashboard_Admin(false);
 if ($hub->can_use_monitor()) { throw new RuntimeException('Unprivileged user can access Monitor'); }
 $roles = ['teacher'];
 if ($hub->can_use_monitor()) { throw new RuntimeException('Teacher can access Monitor without permission'); }
 $roles = ['assistant'];
 if (!$hub->can_use_monitor()) { throw new RuntimeException('Assistant must have Monitor access'); }
+$roles = ['custom_assistant'];
+if (!$hub->can_use_monitor()) { throw new RuntimeException('Custom assistant role must have Monitor access'); }
 $roles = []; $caps = ['manage_options'];
 if (!$hub->can_use_monitor()) { throw new RuntimeException('Administrator must have Monitor access'); }
 $caps = ['olama_monitor_attendance'];
