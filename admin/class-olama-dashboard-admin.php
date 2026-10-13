@@ -32,6 +32,7 @@ class Olama_Dashboard_Admin {
         add_action( 'deactivated_plugin', [ $this, 'mark_registry_refresh_pending' ], 10, 0 );
         add_action( 'wp_before_admin_bar_render', [ $this, 'simplify_admin_bar' ] );
         add_action( 'wp_ajax_olama_dashboard_toggle_quick_action', [ $this, 'ajax_toggle_quick_action' ] );
+        add_action( 'admin_post_olama_monitor_settings', [ $this, 'save_monitor_settings' ] );
     }
 
     // ── Menu ─────────────────────────────────────────────────────────────────
@@ -96,6 +97,14 @@ class Olama_Dashboard_Admin {
     public function render_hub() {
         $tasks = $this->get_daily_tasks();
         $view = isset( $_GET['view'] ) ? sanitize_key( wp_unslash( $_GET['view'] ) ) : '';
+        if ( 'monitor' === $view ) {
+            if ( ! olama_dashboard_can_access() || ! $this->can_use_monitor() ) {
+                wp_die( esc_html__( 'You do not have permission to view this page.', 'olama-dashboard' ), '', [ 'response' => 403 ] );
+            }
+            require_once OLAMA_DASH_PATH . 'admin/class-attendance-monitor.php';
+            (new Olama_Attendance_Monitor())->render();
+            return;
+        }
         if ( isset( $tasks[$view] ) ) {
             if ( ! olama_dashboard_can_access() || ! $this->can_use_teacher_attendance() ) {
                 wp_die( esc_html__( 'You do not have permission to view this page.', 'olama-dashboard' ), '', [ 'response' => 403 ] );
@@ -138,6 +147,29 @@ class Olama_Dashboard_Admin {
             'exam-attendance' => ['label' => __( 'Exam Halls Attendance', 'olama-dashboard' ), 'icon' => 'building', 'shortcode' => 'olama_exam_halls_attendance'],
             'students' => ['label' => __( 'Section Passwords', 'olama-dashboard' ), 'icon' => 'groups', 'shortcode' => 'olama_section_students'],
         ];
+    }
+
+    public function can_use_monitor() {
+        return current_user_can( 'manage_options' )
+            || current_user_can( 'olama_monitor_attendance' )
+            || in_array( 'assistant', (array) wp_get_current_user()->roles, true );
+    }
+
+    public function save_monitor_settings() {
+        if ( ! current_user_can( 'manage_options' ) ) { wp_die( 'Forbidden', '', [ 'response' => 403 ] ); }
+        check_admin_referer( 'olama_monitor_settings' );
+        $deadline = sanitize_text_field( wp_unslash( $_POST['deadline'] ?? '' ) );
+        if ( preg_match( '/^([01]\d|2[0-3]):[0-5]\d$/', $deadline ) ) {
+            update_option( 'olama_monitor_attendance_deadline', $deadline, false );
+        }
+        $dates = preg_split( '/[\s,]+/', sanitize_textarea_field( wp_unslash( $_POST['excluded_dates'] ?? '' ) ), -1, PREG_SPLIT_NO_EMPTY );
+        $dates = array_filter( $dates, function( $date ) {
+            $parsed = DateTimeImmutable::createFromFormat( '!Y-m-d', $date );
+            return $parsed && $parsed->format( 'Y-m-d' ) === $date;
+        } );
+        update_option( 'olama_monitor_excluded_dates', array_values( array_unique( $dates ) ), false );
+        wp_safe_redirect( admin_url( 'admin.php?page=olama-dashboard&view=monitor' ) );
+        exit;
     }
 
     /**
@@ -463,7 +495,12 @@ class Olama_Dashboard_Admin {
             'label'         => __( 'School Management System', 'olama-dashboard' ),
             'capability'    => 'olama_hub_access',
             'default_grant' => true,
-            'items'         => [],
+            'items'         => [ [
+                'id' => 'olama_hub.monitor',
+                'type' => 'page',
+                'label' => __( 'Monitor', 'olama-dashboard' ),
+                'capability' => 'olama_monitor_attendance',
+            ] ],
         ] );
     }
 

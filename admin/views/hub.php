@@ -245,11 +245,13 @@ $hub_nonce = wp_create_nonce( 'olama_hub_nonce' );
     <?php // ── Body ───────────────────────────────────────────────────────── ?>
     <div class="os-hub-body">
 
-        <?php if ( $this->can_use_teacher_attendance() ) : ?>
+        <?php if ( $this->can_use_teacher_attendance() || $this->can_use_monitor() ) : ?>
         <div class="os-hub-quick-actions-section" role="region" aria-label="<?php esc_attr_e( 'Daily Tasks', 'olama-dashboard' ); ?>">
             <h3 class="os-hub-quick-actions-title"><?php esc_html_e( 'Daily Tasks', 'olama-dashboard' ); ?></h3>
             <div class="os-hub-quick-actions-list">
-                <?php foreach ( $this->get_daily_tasks() as $view => $task ) : ?>
+                <?php $daily_tasks = $this->can_use_teacher_attendance() ? $this->get_daily_tasks() : [];
+                if ( $this->can_use_monitor() ) { $daily_tasks['monitor'] = ['label' => __( 'Monitor', 'olama-dashboard' ), 'icon' => 'chart-area']; }
+                foreach ( $daily_tasks as $view => $task ) : ?>
                 <a class="os-hub-quick-action-pill" style="--action-color:#2563eb" href="<?php echo esc_url( admin_url( 'admin.php?page=olama-dashboard&view=' . $view ) ); ?>">
                     <span class="dashicons dashicons-<?php echo esc_attr( $task['icon'] ); ?>" aria-hidden="true"></span>
                     <span class="os-hub-quick-action-label" dir="auto"><?php echo esc_html( $task['label'] ); ?></span>
