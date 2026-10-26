@@ -40,7 +40,7 @@ class Olama_Attendance_Monitor {
         $sections = array_filter($sections, function($section) use ($grade) { return !$grade || (int) $section->grade_id === $grade; });
         $section_map = [];
         foreach ($sections as $section) { $section_map[$section->id] = $section; }
-        $students = $year ? Olama_School_Student::get_students(['academic_year_id' => $year->id]) : [];
+        $students = $year ? Olama_School_Student::get_students(['academic_year_id' => $year->id, 'attendance_only' => true]) : [];
         $by_section = [];
         foreach ($students as $student) {
             if (!isset($section_map[$student->section_id]) || !$student->is_active || in_array(strtolower((string) $student->enrollment_status), ['0', 'inactive', 'disabled', 'withdrawn'], true)) { continue; }
